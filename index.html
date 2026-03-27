@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{--bg:rgb(23,63,53);--card:rgb(240,240,240);--card-text:rgb(40,40,40);--filter-bg:rgb(224,236,137);--filter-label:rgb(23,63,53);--pin:rgb(124,224,211);--chip-off:rgb(237,232,214);--chip-on:rgb(153,153,66);--chip-on-text:#fff;--chip-off-text:rgb(23,63,53);--white:#fff;--muted:rgba(255,255,255,0.6);--sh-sm:0 1px 3px rgba(0,0,0,0.08);--sh-md:0 4px 14px rgba(0,0,0,0.12);--r:16px;--r-sm:12px;--t:0.25s cubic-bezier(0.25,0.1,0.25,1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--white);-webkit-font-smoothing:antialiased}
+.app{max-width:800px;margin:0 auto;padding:20px 20px 60px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;text-align:center;position:relative}
+.header-center{flex:1}
+.header h1{font-size:44px;font-weight:700;letter-spacing:-0.5px;color:var(--white)}
+.header p{font-size:14px;color:var(--muted);margin-top:6px}
+.credit{position:absolute;top:4px;right:0;font-size:11px;color:var(--muted)}
+.filters{background:var(--filter-bg);border-radius:var(--r);padding:18px 20px;margin-bottom:20px;box-shadow:var(--sh-sm)}
+.fs{margin-bottom:14px}.fs:last-child{margin-bottom:0}
+.fl{font-size:15px;font-weight:700;color:var(--filter-label);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.fr{display:flex;flex-wrap:wrap;gap:8px}
+.fg{display:flex;flex-wrap:wrap;gap:28px}
+.chip{padding:7px 18px;border-radius:980px;font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t);border:none;background:var(--chip-off);color:var(--chip-off-text);font-family:Arial,Helvetica,sans-serif;line-height:1.3}
+.chip:hover{opacity:0.85}.chip.on{background:var(--chip-on);color:var(--chip-on-text)}
+.cb{margin-top:10px;padding:6px 14px;border-radius:980px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--filter-label);cursor:pointer;font-family:Arial,Helvetica,sans-serif;display:none;opacity:0.7}
+.cb:hover{opacity:1}
+#map{width:100%;height:440px;border-radius:var(--r);margin-bottom:20px;box-shadow:var(--sh-md);z-index:1;border:none}
+.leaflet-popup-content-wrapper{border-radius:var(--r-sm)!important;box-shadow:var(--sh-md)!important;border:none!important}
+.leaflet-popup-tip{box-shadow:none!important}
+.leaflet-popup-content{margin:14px 16px!important;font-family:Arial,Helvetica,sans-serif!important;line-height:1.4!important}
+.pn{font-weight:700;font-size:15px;color:#1d1d1f}.pc{font-size:12px;color:#6e6e73;margin-top:2px}
+.pt{display:flex;gap:6px;margin-top:6px}.ptg{padding:2px 10px;border-radius:980px;font-size:10px;font-weight:700;background:#f0f0f0;color:#555}
+.pd{font-size:12px;color:#6e6e73;margin-top:8px;line-height:1.5}.pm{font-size:11px;color:#aeaeb2;margin-top:4px}
+.pa{display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #f0f0f0}
+.pa a{font-size:12px;color:#0071e3;text-decoration:none;font-weight:700}.pa a:hover{text-decoration:underline}
+.cards{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);transition:all var(--t);cursor:pointer;color:var(--card-text)}
+.card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+.ch{display:flex;align-items:center;gap:14px;padding:14px 18px}
+.cp{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0;background:rgb(124,224,211);box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+.ci{flex:1;min-width:0}.cn{font-weight:700;font-size:16px;color:var(--card-text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ct{display:inline-block;padding:2px 10px;border-radius:980px;font-size:10px;font-weight:700}
+.cs{font-size:12px;color:var(--card-text);opacity:0.6;margin-top:2px}.cprice{font-size:12px;color:var(--card-text);opacity:0.5;font-weight:700}
+.stars{display:inline-flex;gap:2px;user-select:none}.stars span{cursor:pointer;transition:color 0.15s;line-height:1}
+.cd{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.25,0.1,0.25,1)}.cd.open{max-height:600px}
+.cdi{padding:0 18px 18px}.dd{height:1px;background:rgba(40,40,40,0.1);margin-bottom:14px}
+.desc{font-size:13px;color:var(--card-text);opacity:0.75;line-height:1.6;margin-bottom:14px}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.dl{font-size:10px;font-weight:700;color:var(--card-text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;opacity:0.45}
+.dv{font-size:12px;color:var(--card-text)}.dv a{color:var(--card-text);font-weight:700;text-decoration:underline;text-decoration-color:rgba(40,40,40,0.3)}
+.dv a:hover{text-decoration-color:var(--card-text)}
+.da{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.db{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:980px;font-size:12px;font-weight:700;text-decoration:none;transition:all var(--t);font-family:Arial,Helvetica,sans-serif;border:none;cursor:pointer}
+.db.pr{background:var(--bg);color:var(--white)}.db.pr:hover{opacity:0.85}
+.db.sc{background:rgba(40,40,40,0.08);color:var(--card-text)}.db.sc:hover{background:rgba(40,40,40,0.15)}
+.dbot{display:flex;gap:18px;align-items:flex-start}.dr{flex-shrink:0}.dn{flex:1}
+.ni{width:100%;min-height:52px;padding:10px 14px;border-radius:10px;border:1px solid rgba(40,40,40,0.1);font-size:12px;resize:vertical;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:rgba(255,255,255,0.6);outline:none;transition:border-color var(--t),box-shadow var(--t);line-height:1.5}
+.ni:focus{border-color:var(--bg);box-shadow:0 0 0 3px rgba(40,40,40,0.08)}.ni::placeholder{color:rgba(40,40,40,0.35)}
+.io-bar{display:flex;gap:8px;margin-bottom:20px;justify-content:flex-end}
+.io-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:var(--white);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t);opacity:0.7}
+.io-btn:hover{opacity:1;border-color:rgba(255,255,255,0.5)}
+.io-btn input{display:none}
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:15px}
+.leaflet-control-zoom{border:none!important;box-shadow:0 2px 8px rgba(0,0,0,0.12)!important;border-radius:10px!important;overflow:hidden}
+.leaflet-control-zoom a{border:none!important;color:#333!important;background:#fff!important;width:34px!important;height:34px!important;line-height:34px!important;font-size:18px!important}
+.leaflet-control-zoom a:hover{background:#f0f0f0!important}
+.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,0.75)!important;color:#888!important;border-radius:6px!important;padding:2px 8px!important}
+.leaflet-control-attribution a{color:#666!important}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><div class="header-center"><h1>Restaurant Dashboard</h1><p id="count"></p></div><span class="credit">Created by Gianni IOLI</span></div>
+<div class="filters">
+<div class="fs"><div class="fl">Cuisine</div><div class="fr" id="fc"></div></div>
+<div class="fg">
+<div class="fs"><div class="fl">Price</div><div class="fr" id="fp"></div></div>
+<div class="fs"><div class="fl">Standard</div><div class="fr" id="fv"></div></div>
+</div>
+<button class="cb" id="cb" onclick="clearAll()">Clear All</button>
+</div>
+<div class="io-bar">
+<button class="io-btn" onclick="exportData()">&#8599; Export Notes</button>
+<label class="io-btn">&#8600; Import Notes<input type="file" accept=".json" onchange="importData(event)"></label>
+</div>
+<div id="map"></div>
+<div class="cards" id="list"></div>
+</div>
+<script>
+var VS={Fancy:{bg:'rgba(40,40,40,0.1)',t:'rgb(40,40,40)'},Intermediate:{bg:'rgba(40,40,40,0.07)',t:'rgb(40,40,40)'},'Low Key':{bg:'rgba(40,40,40,0.05)',t:'rgb(40,40,40)'}};
+var CUI_K=['Japanese / Brazilian / Peruvian','Mexican / Japanese','Steakhouse','Pan-Asian','Modern British','Italian','Greek / Mediterranean','Sri Lankan','West African','French'];
+var PRI_K=['\u00a3\u00a3','\u00a3\u00a3\u00a3'];
+var VIB_K=['Fancy','Intermediate','Low Key'];
+
+var R=[
+{id:1,nm:'SUSHISAMBA',cu:'Japanese / Brazilian / Peruvian',ad:'110 Bishopsgate, EC2N 4AY',lat:51.51572,lng:-0.08210,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 203 640 7330',wb:'https://www.sushisamba.com',hi:'38th & 39th floor, 360\u00b0 city views. Fusion of Japanese, Brazilian & Peruvian cuisine.',hr:'Mon\u2013Sun: 12pm\u20131:30am',tt:'5 min',tm:'Walk along Bishopsgate'},
+{id:2,nm:'Los Mochis',cu:'Mexican / Japanese',ad:'9th Floor, 100 Liverpool St, EC2M 2AT',lat:51.51780,lng:-0.08170,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 7225 2502',wb:'https://www.losmochis.co.uk',hi:'Rooftop above Broadgate Circle. Entirely gluten, nut & celery free. Tokyo meets Tulum.',hr:'Mon\u2013Wed: 7:30am\u20131am, Thu\u2013Fri: 7:30am\u20133am',tt:'5 min',tm:'Walk to Liverpool Street station'},
+{id:3,nm:'Lutyens Grill',cu:'Steakhouse',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51345,lng:-0.09095,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/lutyens-grill',hi:'Old-school grill in The Ned\u2019s former bank manager\u2019s office. Rare breed steaks carved tableside from a trolley. Michelin-quality cuts.',hr:'Lunch Mon\u2013Fri, Dinner Mon\u2013Sat',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
+{id:4,nm:'Kaia',cu:'Pan-Asian',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51335,lng:-0.09110,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/kaia',hi:'Asian-Pacific restaurant in The Ned\u2019s grand banking hall. Pok\u00e9 bowls, sushi, robata grill. Saturday brunch with unlimited sushi.',hr:'Mon\u2013Sat: 12pm\u201310:30pm',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
+{id:5,nm:'Brat',cu:'Modern British',ad:'First Floor, 4 Redchurch St, E1 6JL',lat:51.52365,lng:-0.07290,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'No phone bookings',wb:'https://bratrestaurant.co.uk',hi:'Michelin-starred, Basque-inspired wood-fire grill in Shoreditch. Famous for whole turbot grilled over charcoal. \u201cBrat\u201d is Old English for turbot.',hr:'Mon\u2013Sun: 12\u20133:30pm & 5\u201310pm',tt:'15 min',tm:'Walk north via Bishopsgate to Shoreditch High St'},
+{id:6,nm:'Manteca',cu:'Italian',ad:'49-51 Curtain Rd, EC2A 3PT',lat:51.52280,lng:-0.07930,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7139 5172',wb:'https://www.mantecarestaurant.co.uk',hi:'Nose-to-tail Italian with Bib Gourmand. Hand-rolled pasta, in-house salumeria, wood-fired cooking. From the Smokestak team.',hr:'Mon\u2013Sat: Lunch & Dinner',tt:'12 min',tm:'Walk north via Bishopsgate to Curtain Rd'},
+{id:7,nm:'Lagana',cu:'Greek / Mediterranean',ad:'19 Willow Street, EC2A 4BH',lat:51.52360,lng:-0.08150,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7846 9595',wb:'https://www.lagana.london',hi:'Modern Greek small plates from the Pachamama Group. Flatbreads, skewers, meze. Playful vibe with crayons to doodle on tablecloths.',hr:'Open daily, 90-min sittings',tt:'12 min',tm:'Walk north via Bishopsgate to Great Eastern St'},
+{id:8,nm:'Rambutan',cu:'Sri Lankan',ad:'10 Stoney Street, SE1 9AD',lat:51.50550,lng:-0.09050,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'See website',wb:'https://www.rambutanlondon.com',hi:'Sri Lankan fire-cooked cuisine in Borough Market. Tamil-inspired curries, sambols, and roti from chef Cynthia Shanmugalingam. MICHELIN Guide listed.',hr:'Mon\u2013Wed: 12\u20133 & 5\u201310:15pm, Thu\u2013Sun: 12\u201310:15pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
+{id:9,nm:'Akoko',cu:'West African',ad:'21 Berners Street, W1T 3LP',lat:51.51740,lng:-0.13620,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 7323 0593',wb:'https://akoko.co.uk',hi:'Michelin-starred West African fine dining in Fitzrovia. Creative tasting menu spanning Ghana, Nigeria & Senegal. Jollof rice with lobster is legendary.',hr:'Wed\u2013Thu: 5\u201311pm, Fri\u2013Sat: 12\u20132:30 & 6\u201311pm',tt:'20 min',tm:'Central line: Liverpool St \u2192 Tottenham Court Rd then 5 min walk'},
+{id:10,nm:'OMA',cu:'Greek / Mediterranean',ad:'3 Bedale Street, SE1 9AL',lat:51.50500,lng:-0.09060,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 8129 6760',wb:'https://www.oma.london',hi:'Michelin-starred Greek-inspired restaurant overlooking Borough Market. By David Carter (Smokestak, Manteca). Crudo bar, charcoal grill, coastal wines.',hr:'Tue\u2013Sun: 12\u20133pm & 5:30\u201311pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
+{id:11,nm:'Cabotte',cu:'French',ad:'48 Gresham St, EC2V 7AY',lat:51.51550,lng:-0.09220,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7600 1616',wb:'https://www.cabotte.co.uk',hi:'Founded by two Master Sommeliers. 1000+ wines incl. 650 from Burgundy. Classic French bistro feel in the heart of the City.',hr:'Mon\u2013Fri: Lunch & Dinner, Wine Bar 12pm\u201311pm',tt:'8 min',tm:'Walk west via Threadneedle St & Lothbury'}
+];
+
+function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){R.forEach(function(r){if(r.id===saved.id){r.ra=saved.ra||0;r.no=saved.no||'';}});});}}catch(e){}}
+function saveData(){try{var d=R.map(function(r){return{id:r.id,ra:r.ra,no:r.no};});localStorage.setItem('rd_data',JSON.stringify(d));}catch(e){}}
+function exportData(){var d=R.map(function(r){return{id:r.id,nm:r.nm,ra:r.ra,no:r.no};});var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='restaurant-notes.json';a.click();URL.revokeObjectURL(url);}
+function importData(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var d=JSON.parse(ev.target.result);d.forEach(function(saved){R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){r.ra=saved.ra||0;r.no=saved.no||'';}});});saveData();render();alert('Notes imported successfully!');}catch(err){alert('Error reading file. Please check it is a valid JSON export.');}};reader.readAsText(file);e.target.value='';}
+loadSaved();
+
+var filters={c:[],p:[],v:[]};var selId=null;var markers=[];var mapFiltered=[];
+var map=L.map('map').setView([51.515,-0.085],13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
+
+var howdenIcon=L.divIcon({className:'',
+html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg">'+
+'<defs><filter id="dsh"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs>'+
+'<rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#dsh)"/>'+
+'<circle cx="14" cy="14" r="12" fill="rgb(23,63,43)" filter="url(#dsh)"/>'+
+'<text x="14" y="19" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Arial,sans-serif">H</text>'+
+'</svg>',
+iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});
+
+var howdenMarker=L.marker([51.51380,-0.07700],{icon:howdenIcon,zIndexOffset:-100,interactive:true}).addTo(map);
+howdenMarker.bindPopup('<div style="font-family:Arial,sans-serif"><div style="font-weight:700;font-size:14px;color:rgb(23,63,53)">Howden Group Holdings</div><div style="font-size:12px;color:#6e6e73;margin-top:2px">One Creechurch Place, EC3A 5AF</div></div>',{maxWidth:220});
+
+var tubeStations=[
+{nm:'Bank',lat:51.5133,lng:-0.0886},
+{nm:'Liverpool Street',lat:51.5178,lng:-0.0823},
+{nm:'Moorgate',lat:51.5186,lng:-0.0886},
+{nm:'Old Street',lat:51.5263,lng:-0.0877},
+{nm:'London Bridge',lat:51.5055,lng:-0.0860},
+{nm:'Borough',lat:51.5012,lng:-0.0935},
+{nm:'Aldgate',lat:51.5143,lng:-0.0755},
+{nm:'Aldgate East',lat:51.5152,lng:-0.0716},
+{nm:'Tower Hill',lat:51.5101,lng:-0.0765},
+{nm:'Monument',lat:51.5113,lng:-0.0860},
+{nm:'Cannon Street',lat:51.5113,lng:-0.0904},
+{nm:'Mansion House',lat:51.5122,lng:-0.0943},
+{nm:'St Paul\'s',lat:51.5152,lng:-0.0975},
+{nm:'Barbican',lat:51.5204,lng:-0.0979},
+{nm:'Shoreditch High St',lat:51.5234,lng:-0.0756},
+{nm:'Oxford Circus',lat:51.5152,lng:-0.1415},
+{nm:'Tottenham Court Rd',lat:51.5165,lng:-0.1310},
+{nm:'Goodge Street',lat:51.5205,lng:-0.1345}
+];
+
+function createTubeIcon(name){
+return L.divIcon({className:'',
+html:'<div style="display:flex;align-items:center;gap:3px;pointer-events:auto;cursor:pointer">'+
+'<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">'+
+'<circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2.5"/>'+
+'<rect x="1" y="5.5" width="14" height="5" rx="0.5" fill="#003fa2"/>'+
+'</svg>'+
+'<span style="font-family:Arial,sans-serif;font-size:9px;font-weight:700;color:#333;background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:3px;white-space:nowrap;line-height:1.2">'+name+'</span></div>',
+iconSize:[120,16],iconAnchor:[8,8]});}
+
+var tubeMarkers=[];
+tubeStations.forEach(function(s){
+var m=L.marker([s.lat,s.lng],{icon:createTubeIcon(s.nm),zIndexOffset:-200,interactive:false});
+tubeMarkers.push(m);
+});
+
+function updateTubeVisibility(){
+var z=map.getZoom();
+tubeMarkers.forEach(function(m){
+if(z>=14){if(!map.hasLayer(m))map.addLayer(m);}
+else{if(map.hasLayer(m))map.removeLayer(m);}
+});
+}
+updateTubeVisibility();
+map.on('zoomend',function(){updateTubeVisibility();});
+
+map.on('moveend',function(){renderCards();});
+map.on('zoomend',function(){renderCards();});
+
+function createIcon(label){
+return L.divIcon({className:'',
+html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg">'+
+'<defs><radialGradient id="rg" cx="40%" cy="35%" r="50%"><stop offset="0%" stop-color="rgb(150,235,225)"/><stop offset="100%" stop-color="rgb(90,190,178)"/></radialGradient>'+
+'<filter id="ds"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs>'+
+'<rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#ds)"/>'+
+'<circle cx="14" cy="14" r="12" fill="url(#rg)" stroke="rgb(80,170,160)" stroke-width="0.5" filter="url(#ds)"/>'+
+'<ellipse cx="10" cy="10" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20,10,10)"/>'+
+'<text x="14" y="18.5" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial,sans-serif">'+label+'</text></svg>',
+iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});}
+
+function gmapUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.nm+', '+r.ad);}
+function gmapDir(r){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent('One Creechurch Place, London EC3A 5AF')+'&destination='+encodeURIComponent(r.nm+', '+r.ad)+'&travelmode=transit';}
+function getF(){return R.filter(function(r){if(filters.c.length&&filters.c.indexOf(r.cu)<0)return false;if(filters.p.length&&filters.p.indexOf(r.pr)<0)return false;if(filters.v.length&&filters.v.indexOf(r.vi)<0)return false;return true;});}
+function togF(t,v){var a=filters[t];var i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);render();}
+function clearAll(){filters={c:[],p:[],v:[]};render();}
+function sel(id){selId=(selId===id)?null:id;renderCards();if(selId){var r=R.filter(function(x){return x.id===id;})[0];if(r)map.flyTo([r.lat,r.lng],16,{animate:true,duration:0.6});setTimeout(function(){var el=document.getElementById('card-'+selId);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);}}
+function setRating(id,v){R.forEach(function(r){if(r.id===id)r.ra=v;});saveData();renderCards();}
+function setNotes(id){var el=document.getElementById('notes-'+id);if(el)R.forEach(function(r){if(r.id===id)r.no=el.value;});saveData();}
+function stH(ra,id,sz){var h='';for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=ra?'#f5a623':'rgba(40,40,40,0.2)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';return h;}
+
+function getVisible(fd){var b=map.getBounds();return fd.filter(function(r){return b.contains(L.latLng(r.lat,r.lng));});}
+
+function renderCards(){
+var fd=getF();var vis=getVisible(fd);
+document.getElementById('count').textContent=vis.length+' of '+R.length+' restaurants in view';
+var lEl=document.getElementById('list');
+if(!vis.length){lEl.innerHTML='<div class="empty">No restaurants in the current map view. Zoom out or pan to see more.</div>';return;}
+lEl.innerHTML=vis.map(function(r){var idx=R.indexOf(r);var ac=selId===r.id;var vs=VS[r.vi];
+return '<div class="card" id="card-'+r.id+'"><div class="ch" onclick="sel('+r.id+')"><div class="cp">'+(idx+1)+'</div><div class="ci"><div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div><div class="cs">'+r.cu+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="stars">'+stH(r.ra,r.id,16)+'</div><div style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+r.tt+' from office</div></div></div><div class="cd'+(ac?' open':'')+'"><div class="cdi"><div class="dd"></div><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0faf8;border-radius:10px;border:1px solid #e0f0ed;margin-bottom:14px"><svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><div style="font-size:13px;font-weight:700;color:#333">'+r.tt+' from the office</div><div style="font-size:11px;color:#666;margin-top:1px">'+r.tm+'</div></div></div><div class="desc">'+r.hi+'</div><div class="dg"><div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div><div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div><div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div><div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div></div><div class="da"><a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a><a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a><a class="db sc" href="'+r.wb+'" target="_blank">Website</a></div><div class="dbot"><div class="dr"><div class="dl">Your Rating</div><div class="stars">'+stH(r.ra,r.id,24)+'</div></div><div class="dn"><div class="dl">Your Notes</div><textarea class="ni" id="notes-'+r.id+'" oninput="setNotes('+r.id+')" placeholder="Favourite dishes, who you went with...">'+(r.no||'')+'</textarea></div></div></div></div></div>';}).join('');}
+
+function render(){
+var fd=getF();var hasF=filters.c.length||filters.p.length||filters.v.length;
+document.getElementById('count').textContent=fd.length+' of '+R.length+' restaurants';
+document.getElementById('cb').style.display=hasF?'inline-block':'none';
+
+document.getElementById('fc').innerHTML=CUI_K.map(function(c){var on=filters.c.indexOf(c)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'c\',\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>';}).join('');
+document.getElementById('fp').innerHTML=PRI_K.map(function(p){var on=filters.p.indexOf(p)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'p\',\''+p+'\')">'+p+'</button>';}).join('');
+document.getElementById('fv').innerHTML=VIB_K.map(function(v){var on=filters.v.indexOf(v)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'v\',\''+v.replace(/'/g,"\\'")+'\')">'+v+'</button>';}).join('');
+
+markers.forEach(function(m){map.removeLayer(m);});markers=[];
+fd.forEach(function(r){var idx=R.indexOf(r);var icon=createIcon(idx+1);
+var m=L.marker([r.lat,r.lng],{icon:icon}).addTo(map);
+m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div class="pt"><span class="ptg">'+r.pr+'</span><span class="ptg">'+r.vi+'</span></div><div class="pd">'+r.hi+'</div><div style="margin-top:8px;padding:8px 10px;background:#f0faf8;border-radius:8px;border:1px solid #e0f0ed"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-size:12px;font-weight:700;color:#333">From the office: '+r.tt+'</span></div><div style="font-size:11px;color:#555;line-height:1.4">'+r.tm+'</div></div><div class="pa"><a href="'+r.wb+'" target="_blank">Website</a><a href="'+gmapUrl(r)+'" target="_blank">Location</a><a href="'+gmapDir(r)+'" target="_blank">Get Directions</a></div>',{maxWidth:300});
+m.on('click',function(){sel(r.id);});markers.push(m);});
+
+if(fd.length>0){var bounds=L.latLngBounds(fd.map(function(r){return[r.lat,r.lng];}));map.fitBounds(bounds,{padding:[50,50],maxZoom:15});}
+
+renderCards();}
+
+render();
+</script>
+</body>
+</html>
