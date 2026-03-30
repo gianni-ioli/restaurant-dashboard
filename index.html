@@ -300,37 +300,51 @@ if(!name){alert('Please enter a restaurant name');return;}
 var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
 btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
 
-/* Search OSM via Overpass for restaurants matching the name in London area */
-var query='[out:json][timeout:10];(node["amenity"="restaurant"]["name"~"'+name.replace(/"/g,'')+'",i](51.28,-0.51,51.69,0.33);way["amenity"="restaurant"]["name"~"'+name.replace(/"/g,'')+'",i](51.28,-0.51,51.69,0.33););out center body 5;';
-
-fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query))
+/* Use Photon geocoder (OSM-based, good with POI names) */
+fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name+' London')+'&limit=5&lat=51.51&lon=-0.08&lang=en')
 .then(function(r){return r.json();})
 .then(function(data){
-if(!data.elements||!data.elements.length){
-/* Fallback: try Nominatim */
-return fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(name+' restaurant London')+'&limit=3&addressdetails=1')
-.then(function(r){return r.json();})
-.then(function(geo){
-if(!geo||!geo.length)throw new Error('Not found on OpenStreetMap');
-var g=geo[0];
-return {name:name,lat:parseFloat(g.lat),lng:parseFloat(g.lon),address:g.display_name.split(',').slice(0,3).join(',').trim(),tags:{}};
-});
-}
-/* Pick best match */
-var el=data.elements[0];
-var tags=el.tags||{};
-var lat=el.lat||el.center.lat;
-var lng=el.lon||el.center.lon;
+if(!data.features||!data.features.length)throw new Error('Not found');
 
-/* Get address via reverse geocode */
-return fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&addressdetails=1')
+/* Find best restaurant match */
+var best=null;
+data.features.forEach(function(f){
+if(!best){best=f;return;}
+var cat=((f.properties.osm_value||'')+(f.properties.type||'')).toLowerCase();
+if(cat.indexOf('restaurant')>=0||cat.indexOf('cafe')>=0||cat.indexOf('bar')>=0)best=f;
+});
+
+var f=best;
+var p=f.properties||{};
+var coords=f.geometry.coordinates;
+var lng=coords[0];var lat=coords[1];
+
+/* Build address */
+var parts=[];
+if(p.housenumber&&p.street)parts.push(p.housenumber+' '+p.street);
+else if(p.street)parts.push(p.street);
+if(p.postcode)parts.push(p.postcode);
+if(!parts.length)parts.push(p.name||name);
+var addr=parts.join(', ');
+
+/* Now get detailed OSM tags via Nominatim reverse lookup */
+return fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&zoom=18&addressdetails=1')
 .then(function(r){return r.json();})
 .then(function(rev){
+/* Try to get OSM element details */
+var osmType=rev.osm_type;var osmId=rev.osm_id;
+if(!osmType||!osmId)return {name:p.name||name,lat:lat,lng:lng,address:addr,tags:{}};
+
+/* Get full tags from Nominatim lookup endpoint */
+return fetch('https://nominatim.openstreetmap.org/lookup?format=json&osm_ids='+osmType.charAt(0).toUpperCase()+osmId+'&extratags=1')
+.then(function(r){return r.json();})
+.then(function(details){
+var tags=(details&&details[0]&&details[0].extratags)||{};
 var a=rev.address||{};
-var addr=[a.road,a.house_number].filter(Boolean).join(' ');
-if(a.postcode)addr+=', '+a.postcode;
-if(!addr)addr=rev.display_name.split(',').slice(0,3).join(',').trim();
-return {name:tags.name||name,lat:lat,lng:lng,address:addr,tags:tags};
+var betterAddr=[a.road,a.house_number?a.house_number:''].filter(Boolean).join(' ');
+if(a.postcode)betterAddr+=', '+a.postcode;
+return {name:p.name||name,lat:lat,lng:lng,address:betterAddr||addr,tags:tags};
+}).catch(function(){return {name:p.name||name,lat:lat,lng:lng,address:addr,tags:{}};});
 });
 })
 .then(function(result){
@@ -351,7 +365,7 @@ pendingRestaurant=info;
 showAddForm(info);
 })
 .catch(function(e){
-resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name as it appears on Google Maps.<br><br><small>'+e.message+'</small></div>';
+resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name.<br><br><small>'+e.message+'</small></div>';
 }).finally(function(){btn.disabled=false;loading.style.display='none';});
 }
 
