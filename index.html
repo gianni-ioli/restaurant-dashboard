@@ -300,45 +300,58 @@ if(!name){alert('Please enter a restaurant name');return;}
 var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
 btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
 
-/* Step 1: Geocode with Nominatim */
-fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(name+' London')+'&limit=1&addressdetails=1')
+/* Search OSM via Overpass for restaurants matching the name in London area */
+var query='[out:json][timeout:10];(node["amenity"="restaurant"]["name"~"'+name.replace(/"/g,'')+'",i](51.28,-0.51,51.69,0.33);way["amenity"="restaurant"]["name"~"'+name.replace(/"/g,'')+'",i](51.28,-0.51,51.69,0.33););out center body 5;';
+
+fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query))
+.then(function(r){return r.json();})
+.then(function(data){
+if(!data.elements||!data.elements.length){
+/* Fallback: try Nominatim */
+return fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(name+' restaurant London')+'&limit=3&addressdetails=1')
 .then(function(r){return r.json();})
 .then(function(geo){
-if(!geo||!geo.length)throw new Error('Location not found');
+if(!geo||!geo.length)throw new Error('Not found on OpenStreetMap');
 var g=geo[0];
-var lat=parseFloat(g.lat);var lng=parseFloat(g.lon);
-var osmId=g.osm_id;var osmType=g.osm_type;
+return {name:name,lat:parseFloat(g.lat),lng:parseFloat(g.lon),address:g.display_name.split(',').slice(0,3).join(',').trim(),tags:{}};
+});
+}
+/* Pick best match */
+var el=data.elements[0];
+var tags=el.tags||{};
+var lat=el.lat||el.center.lat;
+var lng=el.lon||el.center.lon;
 
-/* Step 2: Get details from OSM via Overpass */
-var overType=osmType==='node'?'node':osmType==='way'?'way':'relation';
-return fetch('https://overpass-api.de/api/interpreter?data=[out:json];'+overType+'('+osmId+');out body;')
+/* Get address via reverse geocode */
+return fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&addressdetails=1')
 .then(function(r){return r.json();})
-.then(function(osm){
-var tags=(osm.elements&&osm.elements[0]&&osm.elements[0].tags)||{};
-var addr=g.display_name.split(',').slice(0,3).join(',').trim();
-var postcode=g.address&&(g.address.postcode||'')||'';
-if(postcode&&addr.indexOf(postcode)<0)addr+=', '+postcode;
-
+.then(function(rev){
+var a=rev.address||{};
+var addr=[a.road,a.house_number].filter(Boolean).join(' ');
+if(a.postcode)addr+=', '+a.postcode;
+if(!addr)addr=rev.display_name.split(',').slice(0,3).join(',').trim();
+return {name:tags.name||name,lat:lat,lng:lng,address:addr,tags:tags};
+});
+})
+.then(function(result){
+var tags=result.tags||{};
 var info={
-name:tags.name||name,
+name:result.name,
 cuisine:tags.cuisine||'',
-address:addr,
-lat:lat,lng:lng,
+address:result.address,
+lat:result.lat,lng:result.lng,
 price:'',
 phone:tags.phone||tags['contact:phone']||'',
 website:tags.website||tags['contact:website']||'',
 hours:tags.opening_hours||'',
 description:''
 };
-
-/* Clean up cuisine */
 if(info.cuisine){info.cuisine=info.cuisine.replace(/_/g,' ').replace(/;/g,', ');info.cuisine=info.cuisine.charAt(0).toUpperCase()+info.cuisine.slice(1);}
-
 pendingRestaurant=info;
 showAddForm(info);
-});
-}).catch(function(e){
-resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try a more specific name (e.g. "Dishoom Shoreditch London").<br><br><small>'+e.message+'</small></div>';
+})
+.catch(function(e){
+resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name as it appears on Google Maps.<br><br><small>'+e.message+'</small></div>';
 }).finally(function(){btn.disabled=false;loading.style.display='none';});
 }
 
