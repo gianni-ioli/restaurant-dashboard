@@ -110,7 +110,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--whi
 <button class="add-toggle" onclick="toggleAddPanel()">+ Add Restaurant</button>
 <div class="add-panel" id="addpanel">
 <div class="add-row">
-<div class="add-field" style="flex:2"><label>Restaurant Name</label><input type="text" id="add-name" placeholder="e.g. Dishoom Shoreditch"></div>
+<div class="add-field" style="flex:2"><label>Restaurant Name</label><input type="text" id="add-name" placeholder="e.g. Dishoom Shoreditch" onkeydown="if(event.key==='Enter')searchRestaurant()"></div>
 <button class="add-search" id="add-search-btn" onclick="searchRestaurant()">Search</button>
 </div>
 <div id="add-loading" style="display:none;color:var(--filter-label);font-size:13px;padding:8px 0">Searching... this may take a few seconds</div>
@@ -126,7 +126,7 @@ var PRI_K=['\u00a3\u00a3','\u00a3\u00a3\u00a3'];
 var VIB_K=['Fancy','Intermediate','Low Key'];
 
 var R=[
-{id:1,nm:'SUSHISAMBA',cu:'Japanese / Brazilian / Peruvian',ad:'110 Bishopsgate, EC2N 4AY',lat:51.51572,lng:-0.08210,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 203 640 7330',wb:'https://www.sushisamba.com',hi:'38th & 39th floor, 360\u00b0 city views. Fusion of Japanese, Brazilian & Peruvian cuisine.',hr:'Mon\u2013Sun: 12pm\u20131:30am',tt:'5 min',tm:'Walk along Bishopsgate'},
+{id:1,nm:'SUSHISAMBA',cu:'Japanese / Brazilian / Peruvian',ad:'110 Bishopsgate, EC2N 4AY',lat:51.51572,lng:-0.08210,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 203 640 7330',wb:'https://www.sushisamba.com',hi:'38th & 39th floor, 360\u00b0 city views. Fusion of Japanese, Brazilian & Peruvian cuisine.',hr:'Mon\u2013Sun: 12pm\u20131:30am',tt:'5 min',tm:'Walk along Bishopsgate'},
 {id:2,nm:'Los Mochis',cu:'Mexican / Japanese',ad:'9th Floor, 100 Liverpool St, EC2M 2AT',lat:51.51780,lng:-0.08170,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 7225 2502',wb:'https://www.losmochis.co.uk',hi:'Rooftop above Broadgate Circle. Entirely gluten, nut & celery free. Tokyo meets Tulum.',hr:'Mon\u2013Wed: 7:30am\u20131am, Thu\u2013Fri: 7:30am\u20133am',tt:'5 min',tm:'Walk to Liverpool Street station'},
 {id:3,nm:'Lutyens Grill',cu:'Steakhouse',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51345,lng:-0.09095,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/lutyens-grill',hi:'Old-school grill in The Ned\u2019s former bank manager\u2019s office. Rare breed steaks carved tableside from a trolley. Michelin-quality cuts.',hr:'Lunch Mon\u2013Fri, Dinner Mon\u2013Sat',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
 {id:4,nm:'Kaia',cu:'Pan-Asian',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51335,lng:-0.09110,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/kaia',hi:'Asian-Pacific restaurant in The Ned\u2019s grand banking hall. Pok\u00e9 bowls, sushi, robata grill. Saturday brunch with unlimited sushi.',hr:'Mon\u2013Sat: 12pm\u201310:30pm',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
@@ -140,7 +140,16 @@ var R=[
 ];
 
 /* ── PERSISTENCE ── */
-function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id){r.ra=saved.ra||0;r.no=saved.no||'';found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});}}catch(e){}}
+function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id){
+/* Migrate old format */
+if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];
+else if(Array.isArray(saved.ra))r.ra=saved.ra;
+if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];
+else if(Array.isArray(saved.no))r.no=saved.no;
+found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){
+if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];
+if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];
+R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});}}catch(e){}}
 
 function fullData(){return R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});}
 
@@ -170,8 +179,16 @@ fetch('https://api.npoint.io/'+shareId)
 if(!Array.isArray(d))d=[];
 d.forEach(function(saved){
 var found=false;
-R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){r.ra=saved.ra||0;r.no=saved.no||'';found=true;}});
-if(!found&&saved.nm&&saved.ad&&saved.lat){R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}
+R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){
+if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];
+else if(Array.isArray(saved.ra))r.ra=saved.ra;
+if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];
+else if(Array.isArray(saved.no))r.no=saved.no;
+found=true;}});
+if(!found&&saved.nm&&saved.ad&&saved.lat){
+if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];
+if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];
+R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}
 });
 localStorage.setItem('rd_data',JSON.stringify(fullData()));
 setSyncStatus('Synced \u2713',true);
@@ -256,9 +273,82 @@ function clearAll(){filters={c:[],p:[],v:[]};render();}
 
 /* ── SELECTION ── */
 function sel(id){selId=(selId===id)?null:id;renderCards();if(selId){var r=R.filter(function(x){return x.id===id;})[0];if(r)map.flyTo([r.lat,r.lng],16,{animate:true,duration:0.6});setTimeout(function(){var el=document.getElementById('card-'+selId);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);}}
-function setRating(id,v){R.forEach(function(r){if(r.id===id)r.ra=v;});saveData();renderCards();}
-function setNotes(id){var el=document.getElementById('notes-'+id);if(el)R.forEach(function(r){if(r.id===id)r.no=el.value;});saveData();}
-function stH(ra,id,sz){var h='';for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=ra?'#f5a623':'rgba(40,40,40,0.2)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';return h;}
+function setRating(id,v){
+var uname=localStorage.getItem('rd_username')||'';
+if(!uname){uname=prompt('Enter your name (for ratings & notes):');if(!uname)return;localStorage.setItem('rd_username',uname);}
+R.forEach(function(r){
+if(r.id===id){
+if(!Array.isArray(r.ra))r.ra=[];
+/* Remove previous vote by same user, add new */
+r.ra=r.ra.filter(function(x){return x.by!==uname;});
+r.ra.push({by:uname,v:v});
+}
+});saveData();renderCards();}
+
+function getAvgRating(ra){
+if(!Array.isArray(ra)||!ra.length)return 0;
+var sum=0;ra.forEach(function(x){sum+=(x.v||0);});
+return Math.round(sum/ra.length*10)/10;
+}
+
+function getVoteCount(ra){
+if(!Array.isArray(ra))return 0;
+return ra.length;
+}
+
+function postNote(id){
+var uname=localStorage.getItem('rd_username')||'';
+if(!uname){uname=prompt('Enter your name (for ratings & notes):');if(!uname)return;localStorage.setItem('rd_username',uname);}
+var el=document.getElementById('noteinput-'+id);
+if(!el||!el.value.trim())return;
+R.forEach(function(r){
+if(r.id===id){
+if(!Array.isArray(r.no))r.no=[];
+r.no.push({by:uname,text:el.value.trim(),ts:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});
+}
+});
+saveData();renderCards();
+}
+
+function stH(ra,id,sz){
+var avg=getAvgRating(ra);
+var h='';
+for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'#f5a623':'rgba(40,40,40,0.2)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';
+return h;
+}
+
+function stHpopup(ra,sz){
+var avg=getAvgRating(ra);
+var h='';
+for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'#f5a623':'rgba(200,200,200,0.5)')+'">&#9733;</span>';
+return h;
+}
+
+function ratingLabel(ra){
+var avg=getAvgRating(ra);
+var count=getVoteCount(ra);
+if(!count)return '<span style="font-size:10px;color:rgba(40,40,40,0.35)">No votes yet</span>';
+return '<span style="font-size:10px;color:rgba(40,40,40,0.5)">'+avg+'/5 ('+count+' vote'+(count>1?'s':'')+')</span>';
+}
+
+function notesHtml(no,id){
+var notes=Array.isArray(no)?no:[];
+var h='<div style="margin-bottom:8px">';
+if(notes.length){
+h+=notes.map(function(n){
+return '<div style="background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid rgba(40,40,40,0.06)">'+
+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'+
+'<span style="font-size:11px;font-weight:700;color:rgb(23,63,53)">'+n.by+'</span>'+
+'<span style="font-size:10px;color:rgba(40,40,40,0.35)">'+n.ts+'</span></div>'+
+'<div style="font-size:12px;color:var(--card-text);line-height:1.4">'+n.text+'</div></div>';
+}).join('');
+}else{
+h+='<div style="font-size:11px;color:rgba(40,40,40,0.3);padding:4px 0">No notes yet</div>';
+}
+h+='</div>';
+h+='<div style="display:flex;gap:8px"><input type="text" id="noteinput-'+id+'" placeholder="Add a note..." onkeydown="if(event.key===\'Enter\')postNote('+id+')" style="flex:1;padding:8px 12px;border-radius:980px;border:1px solid rgba(40,40,40,0.1);font-size:12px;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);outline:none"><button onclick="event.stopPropagation();postNote('+id+')" style="padding:8px 16px;border-radius:980px;border:none;background:rgb(23,63,53);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:Arial,Helvetica,sans-serif;white-space:nowrap">Post</button></div>';
+return h;
+}
 
 /* ── VIEWPORT FILTER ── */
 function getVisible(fd){var b=map.getBounds();return fd.filter(function(r){return b.contains(L.latLng(r.lat,r.lng));});}
@@ -269,7 +359,7 @@ document.getElementById('count').textContent=vis.length+' of '+R.length+' restau
 var lEl=document.getElementById('list');
 if(!vis.length){lEl.innerHTML='<div class="empty">No restaurants in the current map view. Zoom out or pan to see more.</div>';return;}
 lEl.innerHTML=vis.map(function(r){var idx=R.indexOf(r);var ac=selId===r.id;var vs=VS[r.vi];
-return '<div class="card" id="card-'+r.id+'"><div class="ch" onclick="sel('+r.id+')"><div class="cp">'+(idx+1)+'</div><div class="ci"><div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div><div class="cs">'+r.cu+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="stars">'+stH(r.ra,r.id,16)+'</div><div style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+r.tt+' from office</div></div></div><div class="cd'+(ac?' open':'')+'"><div class="cdi"><div class="dd"></div><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0faf8;border-radius:10px;border:1px solid #e0f0ed;margin-bottom:14px"><svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><div style="font-size:13px;font-weight:700;color:#333">'+r.tt+' from the office</div><div style="font-size:11px;color:#666;margin-top:1px">'+r.tm+'</div></div></div><div class="desc">'+r.hi+'</div><div class="dg"><div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div><div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div><div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div><div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div></div><div class="da"><a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a><a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a><a class="db sc" href="'+r.wb+'" target="_blank">Website</a></div><div class="dbot"><div class="dr"><div class="dl">Your Rating</div><div class="stars">'+stH(r.ra,r.id,24)+'</div></div><div class="dn"><div class="dl">Your Notes</div><textarea class="ni" id="notes-'+r.id+'" oninput="setNotes('+r.id+')" placeholder="Favourite dishes, who you went with...">'+(r.no||'')+'</textarea></div></div></div></div></div>';}).join('');}
+return '<div class="card" id="card-'+r.id+'"><div class="ch" onclick="sel('+r.id+')"><div class="cp">'+(idx+1)+'</div><div class="ci"><div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div><div class="cs">'+r.cu+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="stars">'+stH(r.ra,r.id,16)+'</div>'+ratingLabel(r.ra)+'<div style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+r.tt+' from office</div></div></div><div class="cd'+(ac?' open':'')+'"><div class="cdi"><div class="dd"></div><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0faf8;border-radius:10px;border:1px solid #e0f0ed;margin-bottom:14px"><svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><div style="font-size:13px;font-weight:700;color:#333">'+r.tt+' from the office</div><div style="font-size:11px;color:#666;margin-top:1px">'+r.tm+'</div></div></div><div class="desc">'+r.hi+'</div><div class="dg"><div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div><div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div><div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div><div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div></div><div class="da"><a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a><a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a><a class="db sc" href="'+r.wb+'" target="_blank">Website</a></div><div class="dbot"><div class="dr"><div class="dl">Rating '+ratingLabel(r.ra)+'</div><div class="stars">'+stH(r.ra,r.id,24)+'</div></div><div class="dn"><div class="dl">Notes</div>'+notesHtml(r.no,r.id)+'</div></div></div></div></div>';}).join('');}
 
 /* ── RENDER ── */
 function render(){
@@ -283,7 +373,7 @@ document.getElementById('fv').innerHTML=VIB_K.map(function(v){var on=filters.v.i
 markers.forEach(function(m){map.removeLayer(m);});markers=[];
 fd.forEach(function(r){var idx=R.indexOf(r);var icon=createIcon(idx+1);
 var m=L.marker([r.lat,r.lng],{icon:icon}).addTo(map);
-m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div class="pt"><span class="ptg">'+r.pr+'</span><span class="ptg">'+r.vi+'</span></div><div class="pd">'+r.hi+'</div><div style="margin-top:8px;padding:8px 10px;background:#f0faf8;border-radius:8px;border:1px solid #e0f0ed"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-size:12px;font-weight:700;color:#333">From the office: '+r.tt+'</span></div><div style="font-size:11px;color:#555;line-height:1.4">'+r.tm+'</div></div><div class="pa"><a href="'+r.wb+'" target="_blank">Website</a><a href="'+gmapUrl(r)+'" target="_blank">Location</a><a href="'+gmapDir(r)+'" target="_blank">Get Directions</a></div>',{maxWidth:300});
+m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div class="pt"><span class="ptg">'+r.pr+'</span><span class="ptg">'+r.vi+'</span><span class="ptg">'+stHpopup(r.ra,12)+' '+getAvgRating(r.ra)+'/5</span></div><div class="pd">'+r.hi+'</div><div style="margin-top:8px;padding:8px 10px;background:#f0faf8;border-radius:8px;border:1px solid #e0f0ed"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-size:12px;font-weight:700;color:#333">From the office: '+r.tt+'</span></div><div style="font-size:11px;color:#555;line-height:1.4">'+r.tm+'</div></div><div class="pa"><a href="'+r.wb+'" target="_blank">Website</a><a href="'+gmapUrl(r)+'" target="_blank">Location</a><a href="'+gmapDir(r)+'" target="_blank">Get Directions</a></div>',{maxWidth:300});
 m.on('click',function(){sel(r.id);});markers.push(m);});
 
 if(fd.length>0){var bounds=L.latLngBounds(fd.map(function(r){return[r.lat,r.lng];}));map.fitBounds(bounds,{padding:[50,50],maxZoom:15});}
@@ -300,7 +390,7 @@ if(!name){alert('Please enter a restaurant name');return;}
 var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
 btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
 
-fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name+' London')+'&limit=10&lat=51.51&lon=-0.08&lang=en')
+fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name)+'&limit=20&lat=51.51&lon=-0.08&lang=en')
 .then(function(r){return r.json();})
 .then(function(data){
 if(!data.features||!data.features.length)throw new Error('Not found');
@@ -310,10 +400,11 @@ var seen={};
 var results=[];
 data.features.forEach(function(f){
 var p=f.properties||{};
-var key=(p.name||'')+':'+(p.street||'')+':'+(p.postcode||'');
+var coords=f.geometry.coordinates;
+var lat=coords[1].toFixed(4);var lng=coords[0].toFixed(4);
+var key=lat+','+lng;
 if(seen[key])return;
 seen[key]=true;
-var coords=f.geometry.coordinates;
 var parts=[];
 if(p.housenumber&&p.street)parts.push(p.housenumber+' '+p.street);
 else if(p.street)parts.push(p.street);
@@ -323,6 +414,11 @@ results.push({name:p.name||name,address:parts.join(', ')||p.city||'London',lat:c
 });
 
 if(!results.length)throw new Error('Not found');
+
+/* Filter to London area only */
+var londonResults=results.filter(function(r){return r.lat>51.28&&r.lat<51.7&&r.lng>-0.51&&r.lng<0.34;});
+if(!londonResults.length)londonResults=results;
+results=londonResults;
 
 if(results.length===1){
 /* Only one result — go straight to detail lookup */
@@ -419,7 +515,7 @@ var wb=document.getElementById('add-website').value||'';
 var hr=document.getElementById('add-hours').value||'See website';
 var desc=document.getElementById('add-desc').value||info.name+' in '+info.address;
 var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;
-R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:pr,vi:vi,ra:0,no:'',ph:ph,wb:wb,hi:desc,hr:hr,tt:'See map',tm:'Check Google Maps for directions from the office'});
+R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:pr,vi:vi,ra:[],no:[],ph:ph,wb:wb,hi:desc,hr:hr,tt:'See map',tm:'Check Google Maps for directions from the office'});
 if(CUI_K.indexOf(cu)<0)CUI_K.push(cu);
 pendingRestaurant=null;document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';document.getElementById('addpanel').classList.remove('open');
 saveData();render();map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});}
