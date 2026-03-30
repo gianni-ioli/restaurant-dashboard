@@ -104,9 +104,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--whi
 </div>
 <div class="io-bar">
 <span class="sync-status" id="syncstatus"></span>
-<button class="io-btn" id="sharebtn" onclick="setupShared()">&#9729; Enable Shared Notes</button>
-<button class="io-btn" onclick="exportData()">&#8599; Export Notes</button>
-<label class="io-btn">&#8600; Import Notes<input type="file" accept=".json" onchange="importData(event)"></label>
+<button class="io-btn" id="sharebtn" onclick="setupShared()" style="display:none">&#9729; Enable Shared Notes</button>
 </div>
 <div id="map"></div>
 <div class="add-bar">
@@ -218,9 +216,9 @@ else{return res.json().then(function(){shareId=res.url.split('/').pop();});}
 if(!shareId){setSyncStatus('Error creating shared storage',false);return;}
 var url=window.location.origin+window.location.pathname+'?share='+shareId;
 localStorage.setItem('rd_shareId',shareId);
-document.getElementById('sharebtn').classList.add('active');
-document.getElementById('sharebtn').innerHTML='&#9729; Shared \u2713';
+document.getElementById('sharebtn').style.display='none';
 setSyncStatus('Shared notes active',true);
+window.addEventListener('beforeunload',function(){cloudSave();});
 prompt('Copy this URL and use it as your SharePoint link.\nEveryone who opens it will share the same notes:',url);
 }).catch(function(e){setSyncStatus('Error: '+e.message,false);});
 }
@@ -314,8 +312,6 @@ window.addEventListener('beforeunload',function(){cloudSave();});
 }
 }
 initSync();
-function exportData(){var d=R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='restaurant-notes.json';a.click();URL.revokeObjectURL(url);}
-function importData(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(ev){try{var d=JSON.parse(ev.target.result);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){r.ra=saved.ra||0;r.no=saved.no||'';found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});saveData();render();alert('Notes imported successfully!');}catch(err){alert('Error reading file. Please check it is a valid JSON export.');}};reader.readAsText(file);e.target.value='';}
 loadSaved();
 
 var filters={c:[],p:[],v:[]};var selId=null;var markers=[];var mapFiltered=[];
