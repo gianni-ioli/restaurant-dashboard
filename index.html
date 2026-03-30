@@ -7,108 +7,190 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root{--bg:rgb(23,63,53);--card:rgb(240,240,240);--card-text:rgb(40,40,40);--filter-bg:rgb(224,236,137);--filter-label:rgb(23,63,53);--pin:rgb(124,224,211);--chip-off:rgb(237,232,214);--chip-on:rgb(153,153,66);--chip-on-text:#fff;--chip-off-text:rgb(23,63,53);--white:#fff;--muted:rgba(255,255,255,0.6);--sh-sm:0 1px 3px rgba(0,0,0,0.08);--sh-md:0 4px 14px rgba(0,0,0,0.12);--r:16px;--r-sm:12px;--t:0.25s cubic-bezier(0.25,0.1,0.25,1)}
+:root{
+  --dark:rgb(23,63,53);
+  --dark2:rgb(18,50,42);
+  --lime:rgb(224,236,137);
+  --teal:rgb(124,224,211);
+  --gold:rgb(255,191,63);
+  --olive:rgb(153,133,66);
+  --red:rgb(249,66,58);
+  --blue:rgb(8,87,195);
+  --maroon:rgb(60,15,17);
+  --white:#fff;
+  --grey50:#fafafa;
+  --grey100:#f5f5f5;
+  --grey200:#e8e8e8;
+  --grey300:#d4d4d4;
+  --grey400:#a3a3a3;
+  --grey500:#737373;
+  --grey600:#525252;
+  --grey800:#262626;
+  --grey900:#171717;
+  --r:20px;--r-sm:14px;--r-xs:10px;
+  --t:0.3s cubic-bezier(0.4,0,0.2,1);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--white);-webkit-font-smoothing:antialiased}
-.app{max-width:1200px;margin:0 auto;padding:20px 20px 60px}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;text-align:center;position:relative}
-.header-center{flex:1}
-.header h1{font-size:44px;font-weight:700;letter-spacing:-0.5px;color:var(--white)}
-@media(min-width:768px){.header h1{font-size:52px}}
-.header p{font-size:14px;color:var(--muted);margin-top:6px}
-.credit{position:absolute;top:4px;right:0;font-size:11px;color:var(--muted)}
-.filters{background:var(--filter-bg);border-radius:var(--r);padding:18px 20px;margin-bottom:20px;box-shadow:var(--sh-sm)}
-.fs{margin-bottom:14px}.fs:last-child{margin-bottom:0}
-.fl{font-size:15px;font-weight:700;color:var(--filter-label);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
-.fr{display:flex;flex-wrap:wrap;gap:8px}
-.fg{display:flex;flex-wrap:wrap;gap:28px}
-.chip{padding:7px 18px;border-radius:980px;font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t);border:none;background:var(--chip-off);color:var(--chip-off-text);font-family:Arial,Helvetica,sans-serif;line-height:1.3}
-.chip:hover{opacity:0.85}.chip.on{background:var(--chip-on);color:var(--chip-on-text)}
-.cb{margin-top:10px;padding:6px 14px;border-radius:980px;font-size:12px;font-weight:600;border:none;background:transparent;color:var(--filter-label);cursor:pointer;font-family:Arial,Helvetica,sans-serif;display:none;opacity:0.7}
-.cb:hover{opacity:1}
-#map{width:100%;height:440px;border-radius:var(--r);margin-bottom:20px;box-shadow:var(--sh-md);z-index:1;border:none}
-@media(min-width:768px){#map{height:540px}}
-.leaflet-popup-content-wrapper{border-radius:var(--r-sm)!important;box-shadow:var(--sh-md)!important;border:none!important}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--dark);color:var(--white);-webkit-font-smoothing:antialiased;line-height:1.5}
+.app{max-width:1200px;margin:0 auto;padding:32px 24px 80px}
+@media(max-width:640px){.app{padding:20px 16px 60px}}
+
+/* ── HEADER ── */
+.header{text-align:center;margin-bottom:32px;position:relative}
+.header h1{font-size:48px;font-weight:700;letter-spacing:-1px;color:var(--white);line-height:1.1}
+.header .sub{font-size:15px;color:var(--teal);margin-top:8px;font-weight:500;letter-spacing:0.3px}
+.credit{position:absolute;top:0;right:0;font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:0.5px}
+@media(min-width:768px){.header h1{font-size:56px}}
+
+/* ── FILTERS ── */
+.filters{background:var(--lime);border-radius:var(--r);padding:24px 28px;margin-bottom:28px;position:relative;overflow:hidden}
+.filters::before{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.15)}
+.filters::after{content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;border-radius:50%;background:rgba(23,63,53,0.06)}
+.filter-section{margin-bottom:18px;position:relative;z-index:1}
+.filter-section:last-child{margin-bottom:0}
+.filter-label{font-size:13px;font-weight:700;color:var(--dark);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.filter-row{display:flex;flex-wrap:wrap;gap:8px}
+.filter-groups{display:flex;flex-wrap:wrap;gap:32px}
+.chip{padding:8px 20px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:2px solid rgba(23,63,53,0.12);background:rgba(255,255,255,0.7);color:var(--dark);font-family:inherit;transition:all var(--t);backdrop-filter:blur(4px)}
+.chip:hover{background:rgba(255,255,255,0.95);border-color:rgba(23,63,53,0.25);transform:translateY(-1px)}
+.chip.on{background:var(--dark);color:var(--white);border-color:var(--dark);box-shadow:0 4px 12px rgba(23,63,53,0.3)}
+.cb{margin-top:14px;padding:8px 20px;border-radius:var(--r);font-size:12px;font-weight:600;border:none;background:rgba(23,63,53,0.08);color:var(--dark);cursor:pointer;font-family:inherit;display:none;transition:all var(--t);position:relative;z-index:1}
+.cb:hover{background:rgba(23,63,53,0.15)}
+
+/* ── SYNC BAR ── */
+.io-bar{display:flex;gap:8px;margin-bottom:24px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.io-btn{padding:8px 20px;border-radius:var(--r);font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);cursor:pointer;font-family:inherit;transition:all var(--t)}
+.io-btn:hover{background:rgba(255,255,255,0.12);color:var(--white);border-color:rgba(255,255,255,0.3)}
+.sync-status{font-size:12px;color:var(--teal);margin-right:auto;font-weight:500}
+
+/* ── MAP ── */
+#map{width:100%;height:500px;border-radius:var(--r);margin-bottom:28px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:1;border:3px solid rgba(255,255,255,0.08)}
+@media(min-width:768px){#map{height:580px}}
+.leaflet-popup-content-wrapper{border-radius:var(--r-sm)!important;box-shadow:0 8px 30px rgba(0,0,0,0.15)!important;border:none!important;padding:4px!important}
 .leaflet-popup-tip{box-shadow:none!important}
-.leaflet-popup-content{margin:14px 16px!important;font-family:Arial,Helvetica,sans-serif!important;line-height:1.4!important}
-.pn{font-weight:700;font-size:15px;color:#1d1d1f}.pc{font-size:12px;color:#6e6e73;margin-top:2px}
-.pt{display:flex;gap:6px;margin-top:6px}.ptg{padding:2px 10px;border-radius:980px;font-size:10px;font-weight:700;background:#f0f0f0;color:#555}
-.pd{font-size:12px;color:#6e6e73;margin-top:8px;line-height:1.5}.pm{font-size:11px;color:#aeaeb2;margin-top:4px}
-.pa{display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #f0f0f0}
-.pa a{font-size:12px;color:#0071e3;text-decoration:none;font-weight:700}.pa a:hover{text-decoration:underline}
-.add-bar{margin-bottom:20px}
-.add-toggle{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(124,224,211);color:rgb(23,63,53);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t)}
-.add-toggle:hover{opacity:0.85}
-.add-panel{background:var(--filter-bg);border-radius:var(--r);padding:20px;margin-top:12px;display:none}
+.leaflet-popup-content{margin:16px 18px!important;font-family:Arial,Helvetica,sans-serif!important;line-height:1.5!important}
+.pn{font-weight:700;font-size:16px;color:var(--grey900);letter-spacing:-0.3px}
+.pc{font-size:12px;color:var(--grey500);margin-top:3px}
+.pt{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.ptg{padding:4px 12px;border-radius:var(--r-xs);font-size:10px;font-weight:700;background:var(--grey100);color:var(--grey600);letter-spacing:0.3px}
+.pd{font-size:13px;color:var(--grey500);margin-top:10px;line-height:1.6}
+.pa{display:flex;gap:16px;margin-top:12px;padding-top:10px;border-top:1px solid var(--grey200)}
+.pa a{font-size:12px;color:var(--dark);text-decoration:none;font-weight:700;transition:color var(--t)}
+.pa a:hover{color:var(--teal)}
+
+/* ── ADD RESTAURANT ── */
+.add-bar{margin-bottom:28px}
+.add-toggle{padding:12px 28px;border-radius:var(--r);font-size:14px;font-weight:700;border:none;background:var(--teal);color:var(--dark);cursor:pointer;font-family:inherit;transition:all var(--t);letter-spacing:0.3px}
+.add-toggle:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,224,211,0.35)}
+.add-panel{background:var(--lime);border-radius:var(--r);padding:24px;margin-top:16px;display:none}
 .add-panel.open{display:block}
-.add-row{display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap}
+.add-row{display:flex;gap:12px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap}
 .add-field{flex:1;min-width:180px}
-.add-field label{display:block;font-size:11px;font-weight:700;color:var(--filter-label);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-.add-field input,.add-field select{width:100%;padding:8px 12px;border-radius:10px;border:1px solid rgba(23,63,53,0.15);font-size:13px;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:#fff;outline:none}
-.add-field input:focus,.add-field select:focus{border-color:rgb(23,63,53);box-shadow:0 0 0 3px rgba(23,63,53,0.1)}
-.add-search{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(23,63,53);color:#fff;cursor:pointer;font-family:Arial,Helvetica,sans-serif;white-space:nowrap;min-height:36px}
-.add-search:hover{opacity:0.85}
-.add-search:disabled{opacity:0.4;cursor:not-allowed}
-.add-result{background:#fff;border-radius:12px;padding:16px;margin-top:12px;color:var(--card-text);font-size:13px;line-height:1.5}
-.add-result .ar-name{font-size:16px;font-weight:700;margin-bottom:8px}
-.add-result .ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-.add-result .ar-label{font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(40,40,40,0.45);margin-bottom:2px}
-.add-confirm{margin-top:12px;display:flex;gap:10px}
-.add-confirm button{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:Arial,Helvetica,sans-serif}
-.add-confirm .ac-add{background:rgb(23,63,53);color:#fff}
-.add-confirm .ac-cancel{background:rgba(23,63,53,0.1);color:var(--card-text)}
-.io-bar{display:flex;gap:8px;margin-bottom:20px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
-.io-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:var(--white);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t);opacity:0.7}
-.io-btn:hover{opacity:1;border-color:rgba(255,255,255,0.5)}
-.sync-status{font-size:11px;color:var(--muted);margin-right:auto}
-.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:15px}
-.cards{display:grid;grid-template-columns:1fr;gap:12px}
+.add-field label{display:block;font-size:11px;font-weight:700;color:var(--dark);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
+.add-field input,.add-field select{width:100%;padding:10px 14px;border-radius:var(--r-xs);border:2px solid rgba(23,63,53,0.1);font-size:13px;font-family:inherit;color:var(--grey800);background:var(--white);outline:none;transition:all var(--t)}
+.add-field input:focus,.add-field select:focus{border-color:var(--dark);box-shadow:0 0 0 4px rgba(23,63,53,0.08)}
+.add-search{padding:10px 28px;border-radius:var(--r-xs);font-size:14px;font-weight:700;border:none;background:var(--dark);color:var(--white);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all var(--t)}
+.add-search:hover{opacity:0.9;transform:translateY(-1px)}
+.add-search:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.add-result{background:var(--white);border-radius:var(--r-sm);padding:20px;margin-top:14px;color:var(--grey800);font-size:13px;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.add-result .ar-name{font-size:18px;font-weight:700;margin-bottom:4px;letter-spacing:-0.3px}
+.add-confirm{margin-top:16px;display:flex;gap:10px}
+.add-confirm button{padding:10px 24px;border-radius:var(--r-xs);font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all var(--t)}
+.add-confirm .ac-add{background:var(--dark);color:var(--white)}
+.add-confirm .ac-add:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(23,63,53,0.3)}
+.add-confirm .ac-cancel{background:var(--grey200);color:var(--grey600)}
+
+/* ── CARDS GRID ── */
+.cards{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:768px){.cards{grid-template-columns:1fr 1fr}}
-.card{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);transition:all var(--t);cursor:pointer;color:var(--card-text)}
-.card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
-.ch{display:flex;align-items:center;gap:14px;padding:14px 18px}
-.cp{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;flex-shrink:0;background:rgb(124,224,211);box-shadow:0 2px 6px rgba(0,0,0,0.15)}
-.ci{flex:1;min-width:0}.cn{font-weight:700;font-size:16px;color:var(--card-text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ct{display:inline-block;padding:2px 10px;border-radius:980px;font-size:10px;font-weight:700}
-.cs{font-size:12px;color:var(--card-text);opacity:0.6;margin-top:2px}.cprice{font-size:12px;color:var(--card-text);opacity:0.5;font-weight:700}
-.stars{display:inline-flex;gap:2px;user-select:none}.stars span{cursor:pointer;transition:color 0.15s;line-height:1}
-.cd{max-height:0;overflow:hidden;transition:max-height 0.4s cubic-bezier(0.25,0.1,0.25,1)}.cd.open{max-height:800px}
-.cdi{padding:0 18px 18px}.dd{height:1px;background:rgba(40,40,40,0.1);margin-bottom:14px}
-.desc{font-size:13px;color:var(--card-text);opacity:0.75;line-height:1.6;margin-bottom:14px}
-.dg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-.dl{font-size:10px;font-weight:700;color:var(--card-text);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;opacity:0.45}
-.dv{font-size:12px;color:var(--card-text)}.dv a{color:var(--card-text);font-weight:700;text-decoration:underline;text-decoration-color:rgba(40,40,40,0.3)}
-.dv a:hover{text-decoration-color:var(--card-text)}
-.da{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.db{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:980px;font-size:12px;font-weight:700;text-decoration:none;transition:all var(--t);font-family:Arial,Helvetica,sans-serif;border:none;cursor:pointer}
-.db.pr{background:var(--bg);color:var(--white)}.db.pr:hover{opacity:0.85}
-.db.sc{background:rgba(40,40,40,0.08);color:var(--card-text)}.db.sc:hover{background:rgba(40,40,40,0.15)}
-.dbot{display:flex;gap:18px;align-items:flex-start}.dr{flex-shrink:0}.dn{flex:1}
-.ni{width:100%;min-height:52px;padding:10px 14px;border-radius:10px;border:1px solid rgba(40,40,40,0.1);font-size:12px;resize:vertical;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:rgba(255,255,255,0.6);outline:none;transition:border-color var(--t),box-shadow var(--t);line-height:1.5}
-.ni:focus{border-color:var(--bg);box-shadow:0 0 0 3px rgba(40,40,40,0.08)}.ni::placeholder{color:rgba(40,40,40,0.35)}
-.leaflet-control-zoom{border:none!important;box-shadow:0 2px 8px rgba(0,0,0,0.12)!important;border-radius:10px!important;overflow:hidden}
-.leaflet-control-zoom a{border:none!important;color:#333!important;background:#fff!important;width:34px!important;height:34px!important;line-height:34px!important;font-size:18px!important}
-.leaflet-control-zoom a:hover{background:#f0f0f0!important}
-.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,0.75)!important;color:#888!important;border-radius:6px!important;padding:2px 8px!important}
-.leaflet-control-attribution a{color:#666!important}
+
+.card{background:var(--white);border-radius:var(--r);overflow:hidden;transition:all var(--t);cursor:pointer;color:var(--grey800);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.card:hover{box-shadow:0 8px 30px rgba(0,0,0,0.08);transform:translateY(-2px)}
+
+.ch{display:flex;align-items:center;gap:14px;padding:18px 20px}
+.cp{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--dark);font-weight:700;font-size:15px;flex-shrink:0;background:var(--teal);box-shadow:0 2px 8px rgba(124,224,211,0.3)}
+.ci{flex:1;min-width:0}
+.cn{font-weight:700;font-size:16px;color:var(--grey900);display:flex;align-items:center;gap:8px;flex-wrap:wrap;letter-spacing:-0.2px}
+.ct{padding:3px 10px;border-radius:var(--r-xs);font-size:10px;font-weight:700;letter-spacing:0.3px}
+.cs{font-size:12px;color:var(--grey500);margin-top:3px}
+.cprice{font-size:12px;color:var(--grey400);font-weight:700}
+
+/* Stars */
+.stars{display:inline-flex;gap:2px;user-select:none}
+.stars span{cursor:pointer;transition:all 0.15s;line-height:1}
+
+/* Card detail expand */
+.cd{max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1)}
+.cd.open{max-height:900px}
+.cdi{padding:0 20px 20px}
+.dd{height:1px;background:var(--grey200);margin-bottom:18px}
+.desc{font-size:13px;color:var(--grey600);line-height:1.7;margin-bottom:16px}
+
+.transit-box{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,rgba(124,224,211,0.08),rgba(124,224,211,0.03));border-radius:var(--r-sm);border:1px solid rgba(124,224,211,0.2);margin-bottom:18px}
+
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+@media(max-width:900px){.dg{grid-template-columns:1fr}}
+.dl{font-size:10px;font-weight:700;color:var(--grey400);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.dv{font-size:13px;color:var(--grey800)}
+.dv a{color:var(--dark);font-weight:600;text-decoration:none;border-bottom:1px solid rgba(23,63,53,0.2);transition:all var(--t)}
+.dv a:hover{border-bottom-color:var(--dark)}
+
+.da{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.db{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:var(--r);font-size:12px;font-weight:700;text-decoration:none;transition:all var(--t);font-family:inherit;border:none;cursor:pointer;letter-spacing:0.3px}
+.db.pr{background:var(--dark);color:var(--white)}
+.db.pr:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(23,63,53,0.3)}
+.db.sc{background:var(--grey100);color:var(--grey600)}
+.db.sc:hover{background:var(--grey200)}
+
+.dbot{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.dr{flex-shrink:0}
+.dn{flex:1;min-width:200px}
+.ni{width:100%;padding:10px 16px;border-radius:var(--r);border:2px solid var(--grey200);font-size:13px;font-family:inherit;color:var(--grey800);background:var(--grey50);outline:none;transition:all var(--t);line-height:1.5}
+.ni:focus{border-color:var(--teal);box-shadow:0 0 0 4px rgba(124,224,211,0.12)}
+.ni::placeholder{color:var(--grey400)}
+
+.note-card{background:var(--grey50);border-radius:var(--r-xs);padding:10px 14px;margin-bottom:8px;border:1px solid var(--grey200)}
+.note-by{font-size:11px;font-weight:700;color:var(--dark)}
+.note-date{font-size:10px;color:var(--grey400)}
+.note-text{font-size:12px;color:var(--grey600);line-height:1.5;margin-top:3px}
+.note-input-row{display:flex;gap:8px;margin-top:4px}
+.note-post{padding:10px 20px;border-radius:var(--r);border:none;background:var(--dark);color:var(--white);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all var(--t)}
+.note-post:hover{opacity:0.9;transform:translateY(-1px)}
+
+.empty{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.4);font-size:15px;letter-spacing:0.3px}
+
+/* Leaflet overrides */
+.leaflet-control-zoom{border:none!important;box-shadow:0 4px 16px rgba(0,0,0,0.12)!important;border-radius:var(--r-xs)!important;overflow:hidden}
+.leaflet-control-zoom a{border:none!important;color:var(--grey600)!important;background:var(--white)!important;width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
+.leaflet-control-zoom a:hover{background:var(--grey100)!important;color:var(--grey900)!important}
+.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,0.85)!important;color:var(--grey400)!important;border-radius:8px!important;padding:3px 10px!important;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.leaflet-control-attribution a{color:var(--grey500)!important}
 </style>
 </head>
 <body>
 <div class="app">
-<div class="header"><div class="header-center"><h1>Restaurant Dashboard</h1><p id="count"></p></div><span class="credit">Created by Gianni IOLI</span></div>
+<div class="header">
+<h1>Restaurant Dashboard</h1>
+<p class="sub" id="count"></p>
+<span class="credit">Created by Gianni IOLI</span>
+</div>
+
 <div class="filters">
-<div class="fs"><div class="fl">Cuisine</div><div class="fr" id="fc"></div></div>
-<div class="fg">
-<div class="fs"><div class="fl">Price</div><div class="fr" id="fp"></div></div>
-<div class="fs"><div class="fl">Standard</div><div class="fr" id="fv"></div></div>
+<div class="filter-section"><div class="filter-label">Cuisine</div><div class="filter-row" id="fc"></div></div>
+<div class="filter-groups">
+<div class="filter-section"><div class="filter-label">Price</div><div class="filter-row" id="fp"></div></div>
+<div class="filter-section"><div class="filter-label">Standard</div><div class="filter-row" id="fv"></div></div>
 </div>
 <button class="cb" id="cb" onclick="clearAll()">Clear All</button>
 </div>
+
 <div class="io-bar">
 <span class="sync-status" id="syncstatus"></span>
 <button class="io-btn" id="sharebtn" onclick="setupShared()">&#9729; Enable Shared Notes</button>
 </div>
+
 <div id="map"></div>
+
 <div class="add-bar">
 <button class="add-toggle" onclick="toggleAddPanel()">+ Add Restaurant</button>
 <div class="add-panel" id="addpanel">
@@ -116,114 +198,47 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--whi
 <div class="add-field" style="flex:2"><label>Restaurant Name</label><input type="text" id="add-name" placeholder="e.g. Dishoom Shoreditch" onkeydown="if(event.key==='Enter')searchRestaurant()"></div>
 <button class="add-search" id="add-search-btn" onclick="searchRestaurant()">Search</button>
 </div>
-<div id="add-loading" style="display:none;color:var(--filter-label);font-size:13px;padding:8px 0">Searching... this may take a few seconds</div>
+<div id="add-loading" style="display:none;color:var(--dark);font-size:13px;padding:8px 0;font-weight:600">Searching...</div>
 <div id="add-result"></div>
 </div>
 </div>
+
 <div class="cards" id="list"></div>
 </div>
+
 <script>
-var VS={Fancy:{bg:'rgba(40,40,40,0.1)',t:'rgb(40,40,40)'},Intermediate:{bg:'rgba(40,40,40,0.07)',t:'rgb(40,40,40)'},'Low Key':{bg:'rgba(40,40,40,0.05)',t:'rgb(40,40,40)'}};
+var VS={Fancy:{bg:'rgba(255,191,63,0.12)',t:'rgb(153,133,66)'},Intermediate:{bg:'rgba(124,224,211,0.12)',t:'rgb(23,63,53)'},'Low Key':{bg:'rgba(23,63,53,0.06)',t:'rgb(23,63,53)'}};
 var CUI_K=['Japanese / Brazilian / Peruvian','Mexican / Japanese','Steakhouse','Pan-Asian','Modern British','Italian','Greek / Mediterranean','Sri Lankan','West African','French'];
 var PRI_K=['\u00a3\u00a3','\u00a3\u00a3\u00a3'];
 var VIB_K=['Fancy','Intermediate','Low Key'];
 
 var R=[
 {id:1,nm:'SUSHISAMBA',cu:'Japanese / Brazilian / Peruvian',ad:'110 Bishopsgate, EC2N 4AY',lat:51.51572,lng:-0.08210,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 203 640 7330',wb:'https://www.sushisamba.com',hi:'38th & 39th floor, 360\u00b0 city views. Fusion of Japanese, Brazilian & Peruvian cuisine.',hr:'Mon\u2013Sun: 12pm\u20131:30am',tt:'5 min',tm:'Walk along Bishopsgate'},
-{id:2,nm:'Los Mochis',cu:'Mexican / Japanese',ad:'9th Floor, 100 Liverpool St, EC2M 2AT',lat:51.51780,lng:-0.08170,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 7225 2502',wb:'https://www.losmochis.co.uk',hi:'Rooftop above Broadgate Circle. Entirely gluten, nut & celery free. Tokyo meets Tulum.',hr:'Mon\u2013Wed: 7:30am\u20131am, Thu\u2013Fri: 7:30am\u20133am',tt:'5 min',tm:'Walk to Liverpool Street station'},
-{id:3,nm:'Lutyens Grill',cu:'Steakhouse',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51345,lng:-0.09095,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/lutyens-grill',hi:'Old-school grill in The Ned\u2019s former bank manager\u2019s office. Rare breed steaks carved tableside from a trolley. Michelin-quality cuts.',hr:'Lunch Mon\u2013Fri, Dinner Mon\u2013Sat',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
-{id:4,nm:'Kaia',cu:'Pan-Asian',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51335,lng:-0.09110,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/kaia',hi:'Asian-Pacific restaurant in The Ned\u2019s grand banking hall. Pok\u00e9 bowls, sushi, robata grill. Saturday brunch with unlimited sushi.',hr:'Mon\u2013Sat: 12pm\u201310:30pm',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
-{id:5,nm:'Brat',cu:'Modern British',ad:'First Floor, 4 Redchurch St, E1 6JL',lat:51.52365,lng:-0.07290,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'No phone bookings',wb:'https://bratrestaurant.co.uk',hi:'Michelin-starred, Basque-inspired wood-fire grill in Shoreditch. Famous for whole turbot grilled over charcoal. \u201cBrat\u201d is Old English for turbot.',hr:'Mon\u2013Sun: 12\u20133:30pm & 5\u201310pm',tt:'15 min',tm:'Walk north via Bishopsgate to Shoreditch High St'},
-{id:6,nm:'Manteca',cu:'Italian',ad:'49-51 Curtain Rd, EC2A 3PT',lat:51.52280,lng:-0.07930,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7139 5172',wb:'https://www.mantecarestaurant.co.uk',hi:'Nose-to-tail Italian with Bib Gourmand. Hand-rolled pasta, in-house salumeria, wood-fired cooking. From the Smokestak team.',hr:'Mon\u2013Sat: Lunch & Dinner',tt:'12 min',tm:'Walk north via Bishopsgate to Curtain Rd'},
-{id:7,nm:'Lagana',cu:'Greek / Mediterranean',ad:'19 Willow Street, EC2A 4BH',lat:51.52360,lng:-0.08150,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7846 9595',wb:'https://www.lagana.london',hi:'Modern Greek small plates from the Pachamama Group. Flatbreads, skewers, meze. Playful vibe with crayons to doodle on tablecloths.',hr:'Open daily, 90-min sittings',tt:'12 min',tm:'Walk north via Bishopsgate to Great Eastern St'},
-{id:8,nm:'Rambutan',cu:'Sri Lankan',ad:'10 Stoney Street, SE1 9AD',lat:51.50550,lng:-0.09050,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'See website',wb:'https://www.rambutanlondon.com',hi:'Sri Lankan fire-cooked cuisine in Borough Market. Tamil-inspired curries, sambols, and roti from chef Cynthia Shanmugalingam. MICHELIN Guide listed.',hr:'Mon\u2013Wed: 12\u20133 & 5\u201310:15pm, Thu\u2013Sun: 12\u201310:15pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
-{id:9,nm:'Akoko',cu:'West African',ad:'21 Berners Street, W1T 3LP',lat:51.51740,lng:-0.13620,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 7323 0593',wb:'https://akoko.co.uk',hi:'Michelin-starred West African fine dining in Fitzrovia. Creative tasting menu spanning Ghana, Nigeria & Senegal. Jollof rice with lobster is legendary.',hr:'Wed\u2013Thu: 5\u201311pm, Fri\u2013Sat: 12\u20132:30 & 6\u201311pm',tt:'20 min',tm:'Central line: Liverpool St \u2192 Tottenham Court Rd then 5 min walk'},
-{id:10,nm:'OMA',cu:'Greek / Mediterranean',ad:'3 Bedale Street, SE1 9AL',lat:51.50500,lng:-0.09060,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:0,no:'',ph:'+44 20 8129 6760',wb:'https://www.oma.london',hi:'Michelin-starred Greek-inspired restaurant overlooking Borough Market. By David Carter (Smokestak, Manteca). Crudo bar, charcoal grill, coastal wines.',hr:'Tue\u2013Sun: 12\u20133pm & 5:30\u201311pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
-{id:11,nm:'Cabotte',cu:'French',ad:'48 Gresham St, EC2V 7AY',lat:51.51550,lng:-0.09220,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7600 1616',wb:'https://www.cabotte.co.uk',hi:'Founded by two Master Sommeliers. 1000+ wines incl. 650 from Burgundy. Classic French bistro feel in the heart of the City.',hr:'Mon\u2013Fri: Lunch & Dinner, Wine Bar 12pm\u201311pm',tt:'8 min',tm:'Walk west via Threadneedle St & Lothbury'}
+{id:2,nm:'Los Mochis',cu:'Mexican / Japanese',ad:'9th Floor, 100 Liverpool St, EC2M 2AT',lat:51.51780,lng:-0.08170,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 20 7225 2502',wb:'https://www.losmochis.co.uk',hi:'Rooftop above Broadgate Circle. Entirely gluten, nut & celery free. Tokyo meets Tulum.',hr:'Mon\u2013Wed: 7:30am\u20131am, Thu\u2013Fri: 7:30am\u20133am',tt:'5 min',tm:'Walk to Liverpool Street station'},
+{id:3,nm:'Lutyens Grill',cu:'Steakhouse',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51345,lng:-0.09095,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/lutyens-grill',hi:'Old-school grill in The Ned\u2019s former bank manager\u2019s office. Rare breed steaks carved tableside from a trolley.',hr:'Lunch Mon\u2013Fri, Dinner Mon\u2013Sat',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
+{id:4,nm:'Kaia',cu:'Pan-Asian',ad:'27 Poultry, EC2R 8AJ (The Ned)',lat:51.51335,lng:-0.09110,pr:'\u00a3\u00a3',vi:'Intermediate',ra:[],no:[],ph:'+44 20 3828 2000',wb:'https://www.thened.com/london/restaurants/kaia',hi:'Asian-Pacific restaurant in The Ned\u2019s grand banking hall. Pok\u00e9 bowls, sushi, robata grill.',hr:'Mon\u2013Sat: 12pm\u201310:30pm',tt:'10 min',tm:'Walk via Threadneedle St to Bank'},
+{id:5,nm:'Brat',cu:'Modern British',ad:'First Floor, 4 Redchurch St, E1 6JL',lat:51.52365,lng:-0.07290,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'No phone bookings',wb:'https://bratrestaurant.co.uk',hi:'Michelin-starred, Basque-inspired wood-fire grill in Shoreditch. Famous for whole turbot grilled over charcoal.',hr:'Mon\u2013Sun: 12\u20133:30pm & 5\u201310pm',tt:'15 min',tm:'Walk north via Bishopsgate to Shoreditch High St'},
+{id:6,nm:'Manteca',cu:'Italian',ad:'49-51 Curtain Rd, EC2A 3PT',lat:51.52280,lng:-0.07930,pr:'\u00a3\u00a3',vi:'Intermediate',ra:[],no:[],ph:'+44 20 7139 5172',wb:'https://www.mantecarestaurant.co.uk',hi:'Nose-to-tail Italian with Bib Gourmand. Hand-rolled pasta, in-house salumeria, wood-fired cooking.',hr:'Mon\u2013Sat: Lunch & Dinner',tt:'12 min',tm:'Walk north via Bishopsgate to Curtain Rd'},
+{id:7,nm:'Lagana',cu:'Greek / Mediterranean',ad:'19 Willow Street, EC2A 4BH',lat:51.52360,lng:-0.08150,pr:'\u00a3\u00a3',vi:'Intermediate',ra:[],no:[],ph:'+44 20 7846 9595',wb:'https://www.lagana.london',hi:'Modern Greek small plates from the Pachamama Group. Flatbreads, skewers, meze.',hr:'Open daily, 90-min sittings',tt:'12 min',tm:'Walk north via Bishopsgate to Great Eastern St'},
+{id:8,nm:'Rambutan',cu:'Sri Lankan',ad:'10 Stoney Street, SE1 9AD',lat:51.50550,lng:-0.09050,pr:'\u00a3\u00a3',vi:'Intermediate',ra:[],no:[],ph:'See website',wb:'https://www.rambutanlondon.com',hi:'Sri Lankan fire-cooked cuisine in Borough Market. Tamil-inspired curries, sambols, and roti.',hr:'Mon\u2013Wed: 12\u20133 & 5\u201310:15pm, Thu\u2013Sun: 12\u201310:15pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
+{id:9,nm:'Akoko',cu:'West African',ad:'21 Berners Street, W1T 3LP',lat:51.51740,lng:-0.13620,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 20 7323 0593',wb:'https://akoko.co.uk',hi:'Michelin-starred West African fine dining in Fitzrovia. Creative tasting menu spanning Ghana, Nigeria & Senegal.',hr:'Wed\u2013Thu: 5\u201311pm, Fri\u2013Sat: 12\u20132:30 & 6\u201311pm',tt:'20 min',tm:'Central line: Liverpool St \u2192 Tottenham Court Rd then 5 min walk'},
+{id:10,nm:'OMA',cu:'Greek / Mediterranean',ad:'3 Bedale Street, SE1 9AL',lat:51.50500,lng:-0.09060,pr:'\u00a3\u00a3\u00a3',vi:'Fancy',ra:[],no:[],ph:'+44 20 8129 6760',wb:'https://www.oma.london',hi:'Michelin-starred Greek-inspired restaurant overlooking Borough Market. Crudo bar, charcoal grill, coastal wines.',hr:'Tue\u2013Sun: 12\u20133pm & 5:30\u201311pm',tt:'15 min',tm:'Northern line: Bank \u2192 London Bridge (1 stop) then 3 min walk'},
+{id:11,nm:'Cabotte',cu:'French',ad:'48 Gresham St, EC2V 7AY',lat:51.51550,lng:-0.09220,pr:'\u00a3\u00a3',vi:'Intermediate',ra:[],no:[],ph:'+44 20 7600 1616',wb:'https://www.cabotte.co.uk',hi:'Founded by two Master Sommeliers. 1000+ wines incl. 650 from Burgundy. Classic French bistro.',hr:'Mon\u2013Fri: Lunch & Dinner, Wine Bar 12pm\u201311pm',tt:'8 min',tm:'Walk west via Threadneedle St & Lothbury'}
 ];
 
 /* ── PERSISTENCE ── */
-function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id){
-/* Migrate old format */
-if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];
-else if(Array.isArray(saved.ra))r.ra=saved.ra;
-if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];
-else if(Array.isArray(saved.no))r.no=saved.no;
-found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){
-if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];
-if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];
-R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});}}catch(e){}}
-
+function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id){if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];else if(Array.isArray(saved.ra))r.ra=saved.ra;if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];else if(Array.isArray(saved.no))r.no=saved.no;found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});}}catch(e){}}
 function fullData(){return R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});}
-
 function saveData(){try{localStorage.setItem('rd_data',JSON.stringify(fullData()));cloudSave();}catch(e){}}
 
-/* ── CLOUD SYNC (npoint.io) ── */
+/* ── CLOUD SYNC ── */
 var shareId=null;
-
 function getShareId(){var p=new URLSearchParams(window.location.search);return p.get('share')||null;}
-
-function setSyncStatus(msg,ok){var el=document.getElementById('syncstatus');el.textContent=msg;el.style.color=ok?'rgb(124,224,211)':'var(--muted)';}
-
-function cloudSave(){
-if(!shareId)return;
-setSyncStatus('Saving...',false);
-fetch('https://api.npoint.io/'+shareId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fullData())})
-.then(function(){setSyncStatus('Synced \u2713',true);})
-.catch(function(){setSyncStatus('Sync failed',false);});
-}
-
-function cloudLoad(cb){
-if(!shareId)return;
-setSyncStatus('Loading shared notes...',false);
-fetch('https://api.npoint.io/'+shareId)
-.then(function(r){return r.json();})
-.then(function(d){
-if(!Array.isArray(d))d=[];
-d.forEach(function(saved){
-var found=false;
-R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){
-if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];
-else if(Array.isArray(saved.ra))r.ra=saved.ra;
-if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];
-else if(Array.isArray(saved.no))r.no=saved.no;
-found=true;}});
-if(!found&&saved.nm&&saved.ad&&saved.lat){
-if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];
-if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];
-R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}
-});
-localStorage.setItem('rd_data',JSON.stringify(fullData()));
-setSyncStatus('Synced \u2713',true);
-if(cb)cb();
-}).catch(function(){setSyncStatus('Could not load shared notes',false);if(cb)cb();});
-}
-
-function setupShared(){
-if(shareId){prompt('Share this URL with your team:',window.location.origin+window.location.pathname+'?share='+shareId);return;}
-setSyncStatus('Creating shared storage...',false);
-fetch('https://api.npoint.io/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:fullData()})})
-.then(function(r){return r.json();})
-.then(function(data){
-if(data&&data.id){shareId=data.id;}
-if(!shareId){setSyncStatus('Error creating storage',false);return;}
-localStorage.setItem('rd_shareId',shareId);
-document.getElementById('sharebtn').style.display='none';
-setSyncStatus('Shared notes active',true);
-window.addEventListener('beforeunload',function(){cloudSave();});
-prompt('Copy this URL and use it as your SharePoint link.\nEveryone who opens it will share the same notes:',window.location.origin+window.location.pathname+'?share='+shareId);
-}).catch(function(e){setSyncStatus('Error: '+e.message,false);});
-}
-
-function initSync(){
-shareId=getShareId()||localStorage.getItem('rd_shareId');
-if(shareId){
-document.getElementById('sharebtn').style.display='none';
-cloudLoad(function(){render();});
-window.addEventListener('beforeunload',function(){cloudSave();});
-}
-}
-
+function setSyncStatus(msg,ok){var el=document.getElementById('syncstatus');el.textContent=msg;el.style.color=ok?'rgb(124,224,211)':'rgba(255,255,255,0.4)';}
+function cloudSave(){if(!shareId)return;setSyncStatus('Saving...',false);fetch('https://api.npoint.io/'+shareId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fullData())}).then(function(){setSyncStatus('Synced \u2713',true);}).catch(function(){setSyncStatus('Sync failed',false);});}
+function cloudLoad(cb){if(!shareId)return;setSyncStatus('Loading...',false);fetch('https://api.npoint.io/'+shareId).then(function(r){return r.json();}).then(function(d){if(!Array.isArray(d))d=[];d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){if(typeof saved.ra==='number'&&saved.ra>0)r.ra=[{by:'Legacy',v:saved.ra}];else if(Array.isArray(saved.ra))r.ra=saved.ra;if(typeof saved.no==='string'&&saved.no)r.no=[{by:'Legacy',text:saved.no,ts:'Imported'}];else if(Array.isArray(saved.no))r.no=saved.no;found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){if(typeof saved.ra==='number')saved.ra=saved.ra>0?[{by:'Legacy',v:saved.ra}]:[];if(typeof saved.no==='string')saved.no=saved.no?[{by:'Legacy',text:saved.no,ts:'Imported'}]:[];R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});localStorage.setItem('rd_data',JSON.stringify(fullData()));setSyncStatus('Synced \u2713',true);if(cb)cb();}).catch(function(){setSyncStatus('Could not load',false);if(cb)cb();});}
+function setupShared(){if(shareId){prompt('Share this URL:',window.location.origin+window.location.pathname+'?share='+shareId);return;}setSyncStatus('Creating...',false);fetch('https://api.npoint.io/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:fullData()})}).then(function(r){return r.json();}).then(function(data){if(data&&data.id){shareId=data.id;}if(!shareId){setSyncStatus('Error creating storage',false);return;}localStorage.setItem('rd_shareId',shareId);document.getElementById('sharebtn').style.display='none';setSyncStatus('Shared notes active',true);window.addEventListener('beforeunload',function(){cloudSave();});prompt('Copy this URL for SharePoint:',window.location.origin+window.location.pathname+'?share='+shareId);}).catch(function(e){setSyncStatus('Error: '+e.message,false);});}
+function initSync(){shareId=getShareId()||localStorage.getItem('rd_shareId');if(shareId){document.getElementById('sharebtn').style.display='none';cloudLoad(function(){render();});window.addEventListener('beforeunload',function(){cloudSave();});}}
 loadSaved();
 
 /* ── MAP ── */
@@ -231,41 +246,22 @@ var filters={c:[],p:[],v:[]};var selId=null;var markers=[];
 var map=L.map('map').setView([51.515,-0.085],13);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
 
-/* Howden office pin */
-var howdenIcon=L.divIcon({className:'',
-html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dsh"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#dsh)"/><circle cx="14" cy="14" r="12" fill="rgb(23,63,43)" filter="url(#dsh)"/><text x="14" y="19" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Arial,sans-serif">H</text></svg>',
-iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});
+/* Howden office */
+var howdenIcon=L.divIcon({className:'',html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dsh"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#dsh)"/><circle cx="14" cy="14" r="12" fill="rgb(23,63,43)" filter="url(#dsh)"/><text x="14" y="19" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Arial,sans-serif">H</text></svg>',iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});
 var howdenMarker=L.marker([51.51380,-0.07700],{icon:howdenIcon,zIndexOffset:-100,interactive:true}).addTo(map);
-howdenMarker.bindPopup('<div style="font-family:Arial,sans-serif"><div style="font-weight:700;font-size:14px;color:rgb(23,63,53)">Howden Group Holdings</div><div style="font-size:12px;color:#6e6e73;margin-top:2px">One Creechurch Place, EC3A 5AF</div></div>',{maxWidth:220});
+howdenMarker.bindPopup('<div style="font-family:Arial,sans-serif"><div style="font-weight:700;font-size:14px;color:rgb(23,63,53)">Howden Group Holdings</div><div style="font-size:12px;color:#737373;margin-top:2px">One Creechurch Place, EC3A 5AF</div></div>',{maxWidth:220});
 
 /* Tube stations */
-var tubeStations=[
-{nm:'Bank',lat:51.5133,lng:-0.0886},{nm:'Liverpool Street',lat:51.5178,lng:-0.0823},
-{nm:'Moorgate',lat:51.5186,lng:-0.0886},{nm:'Old Street',lat:51.5263,lng:-0.0877},
-{nm:'London Bridge',lat:51.5055,lng:-0.0860},{nm:'Borough',lat:51.5012,lng:-0.0935},
-{nm:'Aldgate',lat:51.5143,lng:-0.0755},{nm:'Aldgate East',lat:51.5152,lng:-0.0716},
-{nm:'Tower Hill',lat:51.5101,lng:-0.0765},{nm:'Monument',lat:51.5113,lng:-0.0860},
-{nm:'Cannon Street',lat:51.5113,lng:-0.0904},{nm:'Mansion House',lat:51.5122,lng:-0.0943},
-{nm:'St Paul\'s',lat:51.5152,lng:-0.0975},{nm:'Barbican',lat:51.5204,lng:-0.0979},
-{nm:'Shoreditch High St',lat:51.5234,lng:-0.0756},{nm:'Oxford Circus',lat:51.5152,lng:-0.1415},
-{nm:'Tottenham Court Rd',lat:51.5165,lng:-0.1310},{nm:'Goodge Street',lat:51.5205,lng:-0.1345}
-];
-function createTubeIcon(name){return L.divIcon({className:'',
-html:'<div style="display:flex;align-items:center;gap:3px;pointer-events:auto;cursor:pointer"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2.5"/><rect x="1" y="5.5" width="14" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-family:Arial,sans-serif;font-size:9px;font-weight:700;color:#333;background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:3px;white-space:nowrap;line-height:1.2">'+name+'</span></div>',
-iconSize:[120,16],iconAnchor:[8,8]});}
-var tubeMarkers=[];
-tubeStations.forEach(function(s){tubeMarkers.push(L.marker([s.lat,s.lng],{icon:createTubeIcon(s.nm),zIndexOffset:-200,interactive:false}));});
+var tubeStations=[{nm:'Bank',lat:51.5133,lng:-0.0886},{nm:'Liverpool Street',lat:51.5178,lng:-0.0823},{nm:'Moorgate',lat:51.5186,lng:-0.0886},{nm:'Old Street',lat:51.5263,lng:-0.0877},{nm:'London Bridge',lat:51.5055,lng:-0.0860},{nm:'Borough',lat:51.5012,lng:-0.0935},{nm:'Aldgate',lat:51.5143,lng:-0.0755},{nm:'Aldgate East',lat:51.5152,lng:-0.0716},{nm:'Tower Hill',lat:51.5101,lng:-0.0765},{nm:'Monument',lat:51.5113,lng:-0.0860},{nm:'Cannon Street',lat:51.5113,lng:-0.0904},{nm:'Mansion House',lat:51.5122,lng:-0.0943},{nm:"St Paul's",lat:51.5152,lng:-0.0975},{nm:'Barbican',lat:51.5204,lng:-0.0979},{nm:'Shoreditch High St',lat:51.5234,lng:-0.0756},{nm:'Oxford Circus',lat:51.5152,lng:-0.1415},{nm:'Tottenham Court Rd',lat:51.5165,lng:-0.1310},{nm:'Goodge Street',lat:51.5205,lng:-0.1345}];
+function createTubeIcon(name){return L.divIcon({className:'',html:'<div style="display:flex;align-items:center;gap:3px"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2.5"/><rect x="1" y="5.5" width="14" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-family:Arial;font-size:9px;font-weight:700;color:#333;background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:4px;white-space:nowrap">'+name+'</span></div>',iconSize:[120,16],iconAnchor:[8,8]});}
+var tubeMarkers=[];tubeStations.forEach(function(s){tubeMarkers.push(L.marker([s.lat,s.lng],{icon:createTubeIcon(s.nm),zIndexOffset:-200,interactive:false}));});
 function updateTubeVis(){var z=map.getZoom();tubeMarkers.forEach(function(m){if(z>=14){if(!map.hasLayer(m))map.addLayer(m);}else{if(map.hasLayer(m))map.removeLayer(m);}});}
 updateTubeVis();
-map.on('zoomend',function(){updateTubeVis();});
+map.on('zoomend',function(){updateTubeVis();renderCards();});
 map.on('moveend',function(){renderCards();});
-map.on('zoomend',function(){renderCards();});
 
 /* ── ICONS & URLS ── */
-function createIcon(label){return L.divIcon({className:'',
-html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="rg" cx="40%" cy="35%" r="50%"><stop offset="0%" stop-color="rgb(150,235,225)"/><stop offset="100%" stop-color="rgb(90,190,178)"/></radialGradient><filter id="ds"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#ds)"/><circle cx="14" cy="14" r="12" fill="url(#rg)" stroke="rgb(80,170,160)" stroke-width="0.5" filter="url(#ds)"/><ellipse cx="10" cy="10" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20,10,10)"/><text x="14" y="18.5" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial,sans-serif">'+label+'</text></svg>',
-iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});}
-
+function createIcon(label){return L.divIcon({className:'',html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="rg" cx="40%" cy="35%" r="50%"><stop offset="0%" stop-color="rgb(150,235,225)"/><stop offset="100%" stop-color="rgb(90,190,178)"/></radialGradient><filter id="ds"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#ds)"/><circle cx="14" cy="14" r="12" fill="url(#rg)" stroke="rgb(80,170,160)" stroke-width="0.5" filter="url(#ds)"/><ellipse cx="10" cy="10" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20,10,10)"/><text x="14" y="18.5" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial,sans-serif">'+label+'</text></svg>',iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});}
 function gmapUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.nm+', '+r.ad);}
 function gmapDir(r){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent('One Creechurch Place, London EC3A 5AF')+'&destination='+encodeURIComponent(r.nm+', '+r.ad)+'&travelmode=transit';}
 
@@ -274,84 +270,19 @@ function getF(){return R.filter(function(r){if(filters.c.length&&filters.c.index
 function togF(t,v){var a=filters[t];var i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);render();}
 function clearAll(){filters={c:[],p:[],v:[]};render();}
 
+/* ── RATINGS & NOTES ── */
+function setRating(id,v){var uname=localStorage.getItem('rd_username')||'';if(!uname){uname=prompt('Enter your name:');if(!uname)return;localStorage.setItem('rd_username',uname);}R.forEach(function(r){if(r.id===id){if(!Array.isArray(r.ra))r.ra=[];r.ra=r.ra.filter(function(x){return x.by!==uname;});r.ra.push({by:uname,v:v});}});saveData();renderCards();}
+function getAvgRating(ra){if(!Array.isArray(ra)||!ra.length)return 0;var s=0;ra.forEach(function(x){s+=(x.v||0);});return Math.round(s/ra.length*10)/10;}
+function getVoteCount(ra){return Array.isArray(ra)?ra.length:0;}
+function postNote(id){var uname=localStorage.getItem('rd_username')||'';if(!uname){uname=prompt('Enter your name:');if(!uname)return;localStorage.setItem('rd_username',uname);}var el=document.getElementById('noteinput-'+id);if(!el||!el.value.trim())return;R.forEach(function(r){if(r.id===id){if(!Array.isArray(r.no))r.no=[];r.no.push({by:uname,text:el.value.trim(),ts:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});}});saveData();renderCards();}
+
+function stH(ra,id,sz){var avg=getAvgRating(ra);var h='';for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'rgb(255,191,63)':'rgba(40,40,40,0.12)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';return h;}
+function stHpopup(ra,sz){var avg=getAvgRating(ra);var h='';for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'rgb(255,191,63)':'rgba(200,200,200,0.3)')+'">&#9733;</span>';return h;}
+function ratingLabel(ra){var avg=getAvgRating(ra);var c=getVoteCount(ra);if(!c)return '<span style="font-size:10px;color:rgba(40,40,40,0.3)">No votes</span>';return '<span style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+avg+'/5 &middot; '+c+' vote'+(c>1?'s':'')+'</span>';}
+function notesHtml(no,id){var notes=Array.isArray(no)?no:[];var h='<div style="margin-bottom:8px">';if(notes.length){h+=notes.map(function(n){return '<div class="note-card"><div style="display:flex;justify-content:space-between;align-items:center"><span class="note-by">'+n.by+'</span><span class="note-date">'+n.ts+'</span></div><div class="note-text">'+n.text+'</div></div>';}).join('');}else{h+='<div style="font-size:11px;color:rgba(40,40,40,0.25);padding:4px 0">No notes yet</div>';}h+='</div><div class="note-input-row"><input type="text" class="ni" id="noteinput-'+id+'" placeholder="Add a note..." onkeydown="if(event.key===\'Enter\')postNote('+id+')"><button class="note-post" onclick="event.stopPropagation();postNote('+id+')">Post</button></div>';return h;}
+
 /* ── SELECTION ── */
 function sel(id){selId=(selId===id)?null:id;renderCards();if(selId){var r=R.filter(function(x){return x.id===id;})[0];if(r)map.flyTo([r.lat,r.lng],16,{animate:true,duration:0.6});setTimeout(function(){var el=document.getElementById('card-'+selId);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);}}
-function setRating(id,v){
-var uname=localStorage.getItem('rd_username')||'';
-if(!uname){uname=prompt('Enter your name (for ratings & notes):');if(!uname)return;localStorage.setItem('rd_username',uname);}
-R.forEach(function(r){
-if(r.id===id){
-if(!Array.isArray(r.ra))r.ra=[];
-/* Remove previous vote by same user, add new */
-r.ra=r.ra.filter(function(x){return x.by!==uname;});
-r.ra.push({by:uname,v:v});
-}
-});saveData();renderCards();}
-
-function getAvgRating(ra){
-if(!Array.isArray(ra)||!ra.length)return 0;
-var sum=0;ra.forEach(function(x){sum+=(x.v||0);});
-return Math.round(sum/ra.length*10)/10;
-}
-
-function getVoteCount(ra){
-if(!Array.isArray(ra))return 0;
-return ra.length;
-}
-
-function postNote(id){
-var uname=localStorage.getItem('rd_username')||'';
-if(!uname){uname=prompt('Enter your name (for ratings & notes):');if(!uname)return;localStorage.setItem('rd_username',uname);}
-var el=document.getElementById('noteinput-'+id);
-if(!el||!el.value.trim())return;
-R.forEach(function(r){
-if(r.id===id){
-if(!Array.isArray(r.no))r.no=[];
-r.no.push({by:uname,text:el.value.trim(),ts:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});
-}
-});
-saveData();renderCards();
-}
-
-function stH(ra,id,sz){
-var avg=getAvgRating(ra);
-var h='';
-for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'#f5a623':'rgba(40,40,40,0.2)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';
-return h;
-}
-
-function stHpopup(ra,sz){
-var avg=getAvgRating(ra);
-var h='';
-for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=Math.round(avg)?'#f5a623':'rgba(200,200,200,0.5)')+'">&#9733;</span>';
-return h;
-}
-
-function ratingLabel(ra){
-var avg=getAvgRating(ra);
-var count=getVoteCount(ra);
-if(!count)return '<span style="font-size:10px;color:rgba(40,40,40,0.35)">No votes yet</span>';
-return '<span style="font-size:10px;color:rgba(40,40,40,0.5)">'+avg+'/5 ('+count+' vote'+(count>1?'s':'')+')</span>';
-}
-
-function notesHtml(no,id){
-var notes=Array.isArray(no)?no:[];
-var h='<div style="margin-bottom:8px">';
-if(notes.length){
-h+=notes.map(function(n){
-return '<div style="background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid rgba(40,40,40,0.06)">'+
-'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'+
-'<span style="font-size:11px;font-weight:700;color:rgb(23,63,53)">'+n.by+'</span>'+
-'<span style="font-size:10px;color:rgba(40,40,40,0.35)">'+n.ts+'</span></div>'+
-'<div style="font-size:12px;color:var(--card-text);line-height:1.4">'+n.text+'</div></div>';
-}).join('');
-}else{
-h+='<div style="font-size:11px;color:rgba(40,40,40,0.3);padding:4px 0">No notes yet</div>';
-}
-h+='</div>';
-h+='<div style="display:flex;gap:8px"><input type="text" id="noteinput-'+id+'" placeholder="Add a note..." onkeydown="if(event.key===\'Enter\')postNote('+id+')" style="flex:1;padding:8px 12px;border-radius:980px;border:1px solid rgba(40,40,40,0.1);font-size:12px;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);outline:none"><button onclick="event.stopPropagation();postNote('+id+')" style="padding:8px 16px;border-radius:980px;border:none;background:rgb(23,63,53);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:Arial,Helvetica,sans-serif;white-space:nowrap">Post</button></div>';
-return h;
-}
 
 /* ── VIEWPORT FILTER ── */
 function getVisible(fd){var b=map.getBounds();return fd.filter(function(r){return b.contains(L.latLng(r.lat,r.lng));});}
@@ -360,168 +291,33 @@ function renderCards(){
 var fd=getF();var vis=getVisible(fd);
 document.getElementById('count').textContent=vis.length+' of '+R.length+' restaurants in view';
 var lEl=document.getElementById('list');
-if(!vis.length){lEl.innerHTML='<div class="empty">No restaurants in the current map view. Zoom out or pan to see more.</div>';return;}
+if(!vis.length){lEl.innerHTML='<div class="empty">No restaurants in the current map view.<br>Zoom out or pan to see more.</div>';return;}
 lEl.innerHTML=vis.map(function(r){var idx=R.indexOf(r);var ac=selId===r.id;var vs=VS[r.vi];
-return '<div class="card" id="card-'+r.id+'"><div class="ch" onclick="sel('+r.id+')"><div class="cp">'+(idx+1)+'</div><div class="ci"><div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div><div class="cs">'+r.cu+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="stars">'+stH(r.ra,r.id,16)+'</div>'+ratingLabel(r.ra)+'<div style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+r.tt+' from office</div></div></div><div class="cd'+(ac?' open':'')+'"><div class="cdi"><div class="dd"></div><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0faf8;border-radius:10px;border:1px solid #e0f0ed;margin-bottom:14px"><svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><div style="font-size:13px;font-weight:700;color:#333">'+r.tt+' from the office</div><div style="font-size:11px;color:#666;margin-top:1px">'+r.tm+'</div></div></div><div class="desc">'+r.hi+'</div><div class="dg"><div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div><div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div><div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div><div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div></div><div class="da"><a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a><a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a><a class="db sc" href="'+r.wb+'" target="_blank">Website</a></div><div class="dbot"><div class="dr"><div class="dl">Rating '+ratingLabel(r.ra)+'</div><div class="stars">'+stH(r.ra,r.id,24)+'</div></div><div class="dn"><div class="dl">Notes</div>'+notesHtml(r.no,r.id)+'</div></div></div></div></div>';}).join('');}
+return '<div class="card" id="card-'+r.id+'">'+'<div class="ch" onclick="sel('+r.id+')">'+'<div class="cp">'+(idx+1)+'</div>'+'<div class="ci">'+'<div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div>'+'<div class="cs">'+r.cu+'</div>'+'</div>'+'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">'+'<div class="stars">'+stH(r.ra,r.id,15)+'</div>'+ratingLabel(r.ra)+'<div style="font-size:10px;color:rgba(40,40,40,0.3);font-weight:600">'+r.tt+'</div>'+'</div>'+'</div>'+'<div class="cd'+(ac?' open':'')+'">'+'<div class="cdi">'+'<div class="dd"></div>'+'<div class="transit-box">'+'<svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg>'+'<div><div style="font-size:13px;font-weight:700;color:rgb(23,63,53)">'+r.tt+' from the office</div><div style="font-size:11px;color:#737373;margin-top:1px">'+r.tm+'</div></div>'+'</div>'+'<div class="desc">'+r.hi+'</div>'+'<div class="dg">'+'<div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div>'+'<div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div>'+'<div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div>'+'<div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div>'+'</div>'+'<div class="da">'+'<a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a>'+'<a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a>'+'<a class="db sc" href="'+r.wb+'" target="_blank">Website</a>'+'</div>'+'<div class="dbot">'+'<div class="dr"><div class="dl">Rating '+ratingLabel(r.ra)+'</div><div class="stars">'+stH(r.ra,r.id,22)+'</div></div>'+'<div class="dn"><div class="dl">Notes</div>'+notesHtml(r.no,r.id)+'</div>'+'</div>'+'</div>'+'</div>'+'</div>';}).join('');}
 
 /* ── RENDER ── */
 function render(){
 var fd=getF();var hasF=filters.c.length||filters.p.length||filters.v.length;
 document.getElementById('cb').style.display=hasF?'inline-block':'none';
-
 document.getElementById('fc').innerHTML=CUI_K.map(function(c){var on=filters.c.indexOf(c)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'c\',\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>';}).join('');
 document.getElementById('fp').innerHTML=PRI_K.map(function(p){var on=filters.p.indexOf(p)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'p\',\''+p+'\')">'+p+'</button>';}).join('');
 document.getElementById('fv').innerHTML=VIB_K.map(function(v){var on=filters.v.indexOf(v)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'v\',\''+v.replace(/'/g,"\\'")+'\')">'+v+'</button>';}).join('');
-
 markers.forEach(function(m){map.removeLayer(m);});markers=[];
 fd.forEach(function(r){var idx=R.indexOf(r);var icon=createIcon(idx+1);
 var m=L.marker([r.lat,r.lng],{icon:icon}).addTo(map);
-m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div class="pt"><span class="ptg">'+r.pr+'</span><span class="ptg">'+r.vi+'</span><span class="ptg">'+stHpopup(r.ra,12)+' '+getAvgRating(r.ra)+'/5</span></div><div class="pd">'+r.hi+'</div><div style="margin-top:8px;padding:8px 10px;background:#f0faf8;border-radius:8px;border:1px solid #e0f0ed"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-size:12px;font-weight:700;color:#333">From the office: '+r.tt+'</span></div><div style="font-size:11px;color:#555;line-height:1.4">'+r.tm+'</div></div><div class="pa"><a href="'+r.wb+'" target="_blank">Website</a><a href="'+gmapUrl(r)+'" target="_blank">Location</a><a href="'+gmapDir(r)+'" target="_blank">Get Directions</a></div>',{maxWidth:300});
+m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div class="pt"><span class="ptg">'+r.pr+'</span><span class="ptg">'+r.vi+'</span><span class="ptg">'+stHpopup(r.ra,12)+' '+getAvgRating(r.ra)+'/5</span></div><div class="pd">'+r.hi+'</div><div class="transit-box" style="margin-top:10px"><svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><span style="font-size:12px;font-weight:700;color:rgb(23,63,53)">'+r.tt+'</span><span style="font-size:11px;color:#737373"> \u2013 '+r.tm+'</span></div></div><div class="pa"><a href="'+r.wb+'" target="_blank">Website</a><a href="'+gmapUrl(r)+'" target="_blank">Location</a><a href="'+gmapDir(r)+'" target="_blank">Directions</a></div>',{maxWidth:320});
 m.on('click',function(){sel(r.id);});markers.push(m);});
-
-if(fd.length>0){var bounds=L.latLngBounds(fd.map(function(r){return[r.lat,r.lng];}));map.fitBounds(bounds,{padding:[50,50],maxZoom:15});}
-renderCards();
-}
+if(fd.length>0){map.fitBounds(L.latLngBounds(fd.map(function(r){return[r.lat,r.lng];})),{padding:[50,50],maxZoom:15});}
+renderCards();}
 
 /* ── ADD RESTAURANT ── */
 function toggleAddPanel(){var p=document.getElementById('addpanel');p.classList.toggle('open');if(!p.classList.contains('open')){document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';}}
 var pendingRestaurant=null;
-
-function searchRestaurant(){
-var name=document.getElementById('add-name').value.trim();
-if(!name){alert('Please enter a restaurant name');return;}
-var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
-btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
-
-fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name)+'&limit=20&lat=51.51&lon=-0.08&lang=en')
-.then(function(r){return r.json();})
-.then(function(data){
-if(!data.features||!data.features.length)throw new Error('Not found');
-
-/* Filter to likely restaurant/food matches and deduplicate by name+street */
-var seen={};
-var results=[];
-data.features.forEach(function(f){
-var p=f.properties||{};
-var coords=f.geometry.coordinates;
-var lat=coords[1].toFixed(4);var lng=coords[0].toFixed(4);
-var key=lat+','+lng;
-if(seen[key])return;
-seen[key]=true;
-var parts=[];
-if(p.housenumber&&p.street)parts.push(p.housenumber+' '+p.street);
-else if(p.street)parts.push(p.street);
-if(p.district||p.locality)parts.push(p.district||p.locality);
-if(p.postcode)parts.push(p.postcode);
-results.push({name:p.name||name,address:parts.join(', ')||p.city||'London',lat:coords[1],lng:coords[0],area:p.district||p.locality||p.city||''});
-});
-
-if(!results.length)throw new Error('Not found');
-
-/* Filter to London area only */
-var londonResults=results.filter(function(r){return r.lat>51.28&&r.lat<51.7&&r.lng>-0.51&&r.lng<0.34;});
-if(!londonResults.length)londonResults=results;
-results=londonResults;
-
-if(results.length===1){
-/* Only one result — go straight to detail lookup */
-pickResult(results[0]);
-}else{
-/* Show list to choose from */
-resultDiv.innerHTML='<div class="add-result"><div style="font-weight:700;font-size:14px;margin-bottom:10px">Found '+results.length+' locations — pick one:</div>'+
-results.map(function(r,i){
-return '<div onclick="pickSearchResult('+i+')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;background:#f8f8f8;border-radius:10px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent" onmouseover="this.style.borderColor=\'rgb(124,224,211)\'" onmouseout="this.style.borderColor=\'transparent\'">'+
-'<div style="width:28px;height:28px;border-radius:50%;background:rgb(124,224,211);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0">'+(i+1)+'</div>'+
-'<div><div style="font-weight:700;font-size:13px;color:#1d1d1f">'+r.name+'</div>'+
-'<div style="font-size:11px;color:#6e6e73;margin-top:1px">'+r.address+'</div></div></div>';
-}).join('')+'</div>';
-window._searchResults=results;
-}
-})
-.catch(function(e){
-resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name.<br><br><small>'+e.message+'</small></div>';
-}).finally(function(){btn.disabled=false;loading.style.display='none';});
-}
-
-function pickSearchResult(idx){
-var r=window._searchResults[idx];
-if(r)pickResult(r);
-}
-
-function pickResult(result){
-var resultDiv=document.getElementById('add-result');
-resultDiv.innerHTML='<div class="add-result"><div style="color:#6e6e73;font-size:12px">Loading details...</div></div>';
-
-/* Get detailed OSM tags */
-fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+result.lat+'&lon='+result.lng+'&zoom=18&addressdetails=1')
-.then(function(r){return r.json();})
-.then(function(rev){
-var osmType=rev.osm_type;var osmId=rev.osm_id;
-if(!osmType||!osmId)return {tags:{}};
-return fetch('https://nominatim.openstreetmap.org/lookup?format=json&osm_ids='+osmType.charAt(0).toUpperCase()+osmId+'&extratags=1')
-.then(function(r){return r.json();})
-.then(function(details){return {tags:(details&&details[0]&&details[0].extratags)||{}};})
-.catch(function(){return {tags:{}};});
-})
-.then(function(d){
-var tags=d.tags||{};
-var info={
-name:result.name,
-cuisine:tags.cuisine||'',
-address:result.address,
-lat:result.lat,lng:result.lng,
-price:'',
-phone:tags.phone||tags['contact:phone']||'',
-website:tags.website||tags['contact:website']||'',
-hours:tags.opening_hours||'',
-description:''
-};
-if(info.cuisine){info.cuisine=info.cuisine.replace(/_/g,' ').replace(/;/g,', ');info.cuisine=info.cuisine.charAt(0).toUpperCase()+info.cuisine.slice(1);}
-pendingRestaurant=info;
-showAddForm(info);
-}).catch(function(){
-var info={name:result.name,cuisine:'',address:result.address,lat:result.lat,lng:result.lng,price:'',phone:'',website:'',hours:'',description:''};
-pendingRestaurant=info;
-showAddForm(info);
-});
-}
-
-function showAddForm(info){
-var resultDiv=document.getElementById('add-result');
-resultDiv.innerHTML='<div class="add-result">'+
-'<div class="ar-name">'+info.name+'</div>'+
-'<div style="font-size:12px;color:#6e6e73;margin-top:2px">'+info.address+'</div>'+
-'<div style="font-size:11px;color:#999;margin-top:4px">Coordinates: '+info.lat.toFixed(5)+', '+info.lng.toFixed(5)+'</div>'+
-'<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
-'<div class="add-field"><label>Cuisine'+(info.cuisine?' (auto-detected)':'')+'</label><input type="text" id="add-cuisine" value="'+info.cuisine+'" placeholder="e.g. Italian, Japanese"></div>'+
-'<div class="add-field"><label>Price</label><select id="add-price"><option value="\u00a3\u00a3">\u00a3\u00a3</option><option value="\u00a3\u00a3\u00a3">\u00a3\u00a3\u00a3</option></select></div>'+
-'<div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div>'+
-'<div class="add-field"><label>Phone'+(info.phone?' (found)':'')+'</label><input type="text" id="add-phone" value="'+info.phone+'" placeholder="+44 20 ..."></div>'+
-'<div class="add-field"><label>Website'+(info.website?' (found)':'')+'</label><input type="text" id="add-website" value="'+info.website+'" placeholder="https://..."></div>'+
-'<div class="add-field"><label>Hours'+(info.hours?' (found)':'')+'</label><input type="text" id="add-hours" value="'+info.hours+'" placeholder="e.g. Mon-Sat 12-10pm"></div>'+
-'</div>'+
-'<div class="add-field" style="margin-top:10px"><label>Short Description</label><input type="text" id="add-desc" value="'+info.description+'" placeholder="What makes this place special..."></div>'+
-'<div class="add-confirm">'+
-'<button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button>'+
-'<button class="ac-cancel" onclick="cancelAdd()">Cancel</button>'+
-'</div>'+
-'</div>';
-}
-
-function confirmAdd(){
-if(!pendingRestaurant)return;var info=pendingRestaurant;
-var cu=document.getElementById('add-cuisine').value||'Other';
-var pr=document.getElementById('add-price').value;
-var vi=document.getElementById('add-standard').value;
-var ph=document.getElementById('add-phone').value||'See website';
-var wb=document.getElementById('add-website').value||'';
-var hr=document.getElementById('add-hours').value||'See website';
-var desc=document.getElementById('add-desc').value||info.name+' in '+info.address;
-var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;
-R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:pr,vi:vi,ra:[],no:[],ph:ph,wb:wb,hi:desc,hr:hr,tt:'See map',tm:'Check Google Maps for directions from the office'});
-if(CUI_K.indexOf(cu)<0)CUI_K.push(cu);
-pendingRestaurant=null;document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';document.getElementById('addpanel').classList.remove('open');
-saveData();render();map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});}
+function searchRestaurant(){var name=document.getElementById('add-name').value.trim();if(!name){alert('Please enter a restaurant name');return;}var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name)+'&limit=20&lat=51.51&lon=-0.08&lang=en').then(function(r){return r.json();}).then(function(data){if(!data.features||!data.features.length)throw new Error('Not found');var seen={};var results=[];data.features.forEach(function(f){var p=f.properties||{};var coords=f.geometry.coordinates;var lat=coords[1].toFixed(4);var lng=coords[0].toFixed(4);var key=lat+','+lng;if(seen[key])return;seen[key]=true;var parts=[];if(p.housenumber&&p.street)parts.push(p.housenumber+' '+p.street);else if(p.street)parts.push(p.street);if(p.district||p.locality)parts.push(p.district||p.locality);if(p.postcode)parts.push(p.postcode);results.push({name:p.name||name,address:parts.join(', ')||p.city||'London',lat:coords[1],lng:coords[0]});});var londonResults=results.filter(function(r){return r.lat>51.28&&r.lat<51.7&&r.lng>-0.51&&r.lng<0.34;});if(londonResults.length)results=londonResults;if(!results.length)throw new Error('Not found');if(results.length===1){pickResult(results[0]);}else{resultDiv.innerHTML='<div class="add-result"><div style="font-weight:700;font-size:15px;margin-bottom:12px;letter-spacing:-0.2px">Found '+results.length+' locations</div>'+results.map(function(r,i){return '<div onclick="pickSearchResult('+i+')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;margin-bottom:8px;background:var(--grey50);border-radius:var(--r-xs);cursor:pointer;transition:all 0.2s;border:2px solid transparent" onmouseover="this.style.borderColor=\'rgb(124,224,211)\';this.style.background=\'#fff\'" onmouseout="this.style.borderColor=\'transparent\';this.style.background=\'var(--grey50)\'">'+'<div style="width:30px;height:30px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:var(--dark);font-weight:700;font-size:12px;flex-shrink:0">'+(i+1)+'</div>'+'<div><div style="font-weight:700;font-size:14px;color:var(--grey900)">'+r.name+'</div>'+'<div style="font-size:12px;color:var(--grey500);margin-top:2px">'+r.address+'</div></div></div>';}).join('')+'</div>';window._searchResults=results;}}).catch(function(e){resultDiv.innerHTML='<div class="add-result" style="color:var(--red)">Could not find "'+name+'". Try the exact restaurant name.<br><small style="color:var(--grey400)">'+e.message+'</small></div>';}).finally(function(){btn.disabled=false;loading.style.display='none';});}
+function pickSearchResult(idx){var r=window._searchResults[idx];if(r)pickResult(r);}
+function pickResult(result){var resultDiv=document.getElementById('add-result');resultDiv.innerHTML='<div class="add-result"><div style="color:var(--grey400);font-size:12px">Loading details...</div></div>';fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+result.lat+'&lon='+result.lng+'&zoom=18&addressdetails=1').then(function(r){return r.json();}).then(function(rev){var osmType=rev.osm_type;var osmId=rev.osm_id;if(!osmType||!osmId)return{tags:{}};return fetch('https://nominatim.openstreetmap.org/lookup?format=json&osm_ids='+osmType.charAt(0).toUpperCase()+osmId+'&extratags=1').then(function(r){return r.json();}).then(function(details){return{tags:(details&&details[0]&&details[0].extratags)||{}};}).catch(function(){return{tags:{}};});}).then(function(d){var tags=d.tags||{};var info={name:result.name,cuisine:tags.cuisine||'',address:result.address,lat:result.lat,lng:result.lng,price:'',phone:tags.phone||tags['contact:phone']||'',website:tags.website||tags['contact:website']||'',hours:tags.opening_hours||'',description:''};if(info.cuisine){info.cuisine=info.cuisine.replace(/_/g,' ').replace(/;/g,', ');info.cuisine=info.cuisine.charAt(0).toUpperCase()+info.cuisine.slice(1);}pendingRestaurant=info;showAddForm(info);}).catch(function(){pendingRestaurant={name:result.name,cuisine:'',address:result.address,lat:result.lat,lng:result.lng,price:'',phone:'',website:'',hours:'',description:''};showAddForm(pendingRestaurant);});}
+function showAddForm(info){var resultDiv=document.getElementById('add-result');resultDiv.innerHTML='<div class="add-result"><div class="ar-name">'+info.name+'</div><div style="font-size:12px;color:var(--grey500);margin-top:2px">'+info.address+'</div><div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="add-field"><label>Cuisine'+(info.cuisine?' (found)':'')+'</label><input type="text" id="add-cuisine" value="'+info.cuisine+'" placeholder="e.g. Italian"></div><div class="add-field"><label>Price</label><select id="add-price"><option value="\u00a3\u00a3">\u00a3\u00a3</option><option value="\u00a3\u00a3\u00a3">\u00a3\u00a3\u00a3</option></select></div><div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div><div class="add-field"><label>Phone'+(info.phone?' (found)':'')+'</label><input type="text" id="add-phone" value="'+info.phone+'" placeholder="+44 20 ..."></div><div class="add-field"><label>Website'+(info.website?' (found)':'')+'</label><input type="text" id="add-website" value="'+info.website+'" placeholder="https://..."></div><div class="add-field"><label>Hours'+(info.hours?' (found)':'')+'</label><input type="text" id="add-hours" value="'+info.hours+'" placeholder="e.g. Mon-Sat 12-10pm"></div></div><div class="add-field" style="margin-top:12px"><label>Short Description</label><input type="text" id="add-desc" value="" placeholder="What makes this place special..."></div><div class="add-confirm"><button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button><button class="ac-cancel" onclick="cancelAdd()">Cancel</button></div></div>';}
+function confirmAdd(){if(!pendingRestaurant)return;var info=pendingRestaurant;var cu=document.getElementById('add-cuisine').value||'Other';var pr=document.getElementById('add-price').value;var vi=document.getElementById('add-standard').value;var ph=document.getElementById('add-phone').value||'See website';var wb=document.getElementById('add-website').value||'';var hr=document.getElementById('add-hours').value||'See website';var desc=document.getElementById('add-desc').value||info.name;var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:pr,vi:vi,ra:[],no:[],ph:ph,wb:wb,hi:desc,hr:hr,tt:'See map',tm:'Check Google Maps for directions'});if(CUI_K.indexOf(cu)<0)CUI_K.push(cu);pendingRestaurant=null;document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';document.getElementById('addpanel').classList.remove('open');saveData();render();map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});}
 function cancelAdd(){pendingRestaurant=null;document.getElementById('add-result').innerHTML='';}
 
 /* ── INIT ── */
