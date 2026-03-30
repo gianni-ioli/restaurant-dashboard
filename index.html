@@ -34,6 +34,32 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--whi
 .pd{font-size:12px;color:#6e6e73;margin-top:8px;line-height:1.5}.pm{font-size:11px;color:#aeaeb2;margin-top:4px}
 .pa{display:flex;gap:12px;margin-top:10px;padding-top:8px;border-top:1px solid #f0f0f0}
 .pa a{font-size:12px;color:#0071e3;text-decoration:none;font-weight:700}.pa a:hover{text-decoration:underline}
+.add-bar{margin-bottom:20px}
+.add-toggle{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(124,224,211);color:rgb(23,63,53);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t)}
+.add-toggle:hover{opacity:0.85}
+.add-panel{background:var(--filter-bg);border-radius:var(--r);padding:20px;margin-top:12px;display:none}
+.add-panel.open{display:block}
+.add-row{display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap}
+.add-field{flex:1;min-width:180px}
+.add-field label{display:block;font-size:11px;font-weight:700;color:var(--filter-label);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.add-field input,.add-field select{width:100%;padding:8px 12px;border-radius:10px;border:1px solid rgba(23,63,53,0.15);font-size:13px;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:#fff;outline:none}
+.add-field input:focus,.add-field select:focus{border-color:rgb(23,63,53);box-shadow:0 0 0 3px rgba(23,63,53,0.1)}
+.add-search{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(23,63,53);color:#fff;cursor:pointer;font-family:Arial,Helvetica,sans-serif;white-space:nowrap;min-height:36px}
+.add-search:hover{opacity:0.85}
+.add-search:disabled{opacity:0.4;cursor:not-allowed}
+.add-result{background:#fff;border-radius:12px;padding:16px;margin-top:12px;color:var(--card-text);font-size:13px;line-height:1.5}
+.add-result .ar-name{font-size:16px;font-weight:700;margin-bottom:8px}
+.add-result .ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.add-result .ar-label{font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(40,40,40,0.45);margin-bottom:2px}
+.add-confirm{margin-top:12px;display:flex;gap:10px}
+.add-confirm button{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:Arial,Helvetica,sans-serif}
+.add-confirm .ac-add{background:rgb(23,63,53);color:#fff}
+.add-confirm .ac-cancel{background:rgba(23,63,53,0.1);color:var(--card-text)}
+.io-bar{display:flex;gap:8px;margin-bottom:20px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.io-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:var(--white);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t);opacity:0.7}
+.io-btn:hover{opacity:1;border-color:rgba(255,255,255,0.5)}
+.sync-status{font-size:11px;color:var(--muted);margin-right:auto}
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:15px}
 .cards{display:flex;flex-direction:column;gap:12px}
 .card{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);transition:all var(--t);cursor:pointer;color:var(--card-text)}
 .card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
@@ -57,33 +83,6 @@ body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--whi
 .dbot{display:flex;gap:18px;align-items:flex-start}.dr{flex-shrink:0}.dn{flex:1}
 .ni{width:100%;min-height:52px;padding:10px 14px;border-radius:10px;border:1px solid rgba(40,40,40,0.1);font-size:12px;resize:vertical;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:rgba(255,255,255,0.6);outline:none;transition:border-color var(--t),box-shadow var(--t);line-height:1.5}
 .ni:focus{border-color:var(--bg);box-shadow:0 0 0 3px rgba(40,40,40,0.08)}.ni::placeholder{color:rgba(40,40,40,0.35)}
-.add-bar{margin-bottom:20px}
-.add-toggle{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(124,224,211);color:rgb(23,63,53);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t)}
-.add-toggle:hover{opacity:0.85}
-.add-panel{background:var(--filter-bg);border-radius:var(--r);padding:20px;margin-top:12px;display:none}
-.add-panel.open{display:block}
-.add-row{display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap}
-.add-field{flex:1;min-width:180px}
-.add-field label{display:block;font-size:11px;font-weight:700;color:var(--filter-label);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-.add-field input,.add-field select{width:100%;padding:8px 12px;border-radius:10px;border:1px solid rgba(23,63,53,0.15);font-size:13px;font-family:Arial,Helvetica,sans-serif;color:var(--card-text);background:#fff;outline:none}
-.add-field input:focus,.add-field select:focus{border-color:rgb(23,63,53);box-shadow:0 0 0 3px rgba(23,63,53,0.1)}
-.add-search{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;background:rgb(23,63,53);color:#fff;cursor:pointer;font-family:Arial,Helvetica,sans-serif;white-space:nowrap;min-height:36px}
-.add-search:hover{opacity:0.85}
-.add-search:disabled{opacity:0.4;cursor:not-allowed}
-.add-result{background:#fff;border-radius:12px;padding:16px;margin-top:12px;color:var(--card-text);font-size:13px;line-height:1.5}
-.add-result .ar-name{font-size:16px;font-weight:700;margin-bottom:8px}
-.add-result .ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-.add-result .ar-label{font-size:10px;font-weight:700;text-transform:uppercase;color:rgba(40,40,40,0.45);margin-bottom:2px}
-.add-confirm{margin-top:12px;display:flex;gap:10px}
-.add-confirm button{padding:8px 20px;border-radius:980px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:Arial,Helvetica,sans-serif}
-.add-confirm .ac-add{background:rgb(23,63,53);color:#fff}
-.add-confirm .ac-cancel{background:rgba(23,63,53,0.1);color:var(--card-text)}
-.io-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:var(--white);cursor:pointer;font-family:Arial,Helvetica,sans-serif;transition:all var(--t);opacity:0.7}
-.io-btn:hover{opacity:1;border-color:rgba(255,255,255,0.5)}
-.io-btn input{display:none}
-.io-btn.active{border-color:rgb(124,224,211);opacity:1}
-.sync-status{font-size:11px;color:var(--muted);margin-right:auto}
-.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:15px}
 .leaflet-control-zoom{border:none!important;box-shadow:0 2px 8px rgba(0,0,0,0.12)!important;border-radius:10px!important;overflow:hidden}
 .leaflet-control-zoom a{border:none!important;color:#333!important;background:#fff!important;width:34px!important;height:34px!important;line-height:34px!important;font-size:18px!important}
 .leaflet-control-zoom a:hover{background:#f0f0f0!important}
@@ -140,267 +139,128 @@ var R=[
 {id:11,nm:'Cabotte',cu:'French',ad:'48 Gresham St, EC2V 7AY',lat:51.51550,lng:-0.09220,pr:'\u00a3\u00a3',vi:'Intermediate',ra:0,no:'',ph:'+44 20 7600 1616',wb:'https://www.cabotte.co.uk',hi:'Founded by two Master Sommeliers. 1000+ wines incl. 650 from Burgundy. Classic French bistro feel in the heart of the City.',hr:'Mon\u2013Fri: Lunch & Dinner, Wine Bar 12pm\u201311pm',tt:'8 min',tm:'Walk west via Threadneedle St & Lothbury'}
 ];
 
+/* ── PERSISTENCE ── */
 function loadSaved(){try{var s=localStorage.getItem('rd_data');if(s){var d=JSON.parse(s);d.forEach(function(saved){var found=false;R.forEach(function(r){if(r.id===saved.id){r.ra=saved.ra||0;r.no=saved.no||'';found=true;}});if(!found&&saved.nm&&saved.ad&&saved.lat){R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}});}}catch(e){}}
-function saveData(){try{var d=R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});localStorage.setItem('rd_data',JSON.stringify(d));cloudSave();}catch(e){}}
 
+function fullData(){return R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});}
+
+function saveData(){try{localStorage.setItem('rd_data',JSON.stringify(fullData()));cloudSave();}catch(e){}}
+
+/* ── CLOUD SYNC (npoint.io) ── */
 var shareId=null;
-var syncTimer=null;
 
-function getShareId(){
-var params=new URLSearchParams(window.location.search);
-return params.get('share')||null;
-}
+function getShareId(){var p=new URLSearchParams(window.location.search);return p.get('share')||null;}
 
-function setSyncStatus(msg,ok){
-var el=document.getElementById('syncstatus');
-el.textContent=msg;
-el.style.color=ok?'rgb(124,224,211)':'var(--muted)';
-}
+function setSyncStatus(msg,ok){var el=document.getElementById('syncstatus');el.textContent=msg;el.style.color=ok?'rgb(124,224,211)':'var(--muted)';}
 
 function cloudSave(){
 if(!shareId)return;
-var d=R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});
-setSyncStatus('Saving...', false);
-fetch('https://api.npoint.io/'+shareId,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(d)
-}).then(function(){setSyncStatus('Synced \u2713',true);})
+setSyncStatus('Saving...',false);
+fetch('https://api.npoint.io/'+shareId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fullData())})
+.then(function(){setSyncStatus('Synced \u2713',true);})
 .catch(function(){setSyncStatus('Sync failed',false);});
 }
 
-function cloudLoad(callback){
+function cloudLoad(cb){
 if(!shareId)return;
-setSyncStatus('Loading shared notes...', false);
+setSyncStatus('Loading shared notes...',false);
 fetch('https://api.npoint.io/'+shareId)
-.then(function(res){return res.json();})
+.then(function(r){return r.json();})
 .then(function(d){
+if(!Array.isArray(d))d=[];
 d.forEach(function(saved){
 var found=false;
-R.forEach(function(r){
-if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){
-r.ra=saved.ra||0;
-r.no=saved.no||'';
-found=true;
-}
+R.forEach(function(r){if(r.id===saved.id||(saved.nm&&r.nm===saved.nm)){r.ra=saved.ra||0;r.no=saved.no||'';found=true;}});
+if(!found&&saved.nm&&saved.ad&&saved.lat){R.push(saved);if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);}
 });
-if(!found&&saved.nm&&saved.ad&&saved.lat){
-R.push(saved);
-if(saved.cu&&CUI_K.indexOf(saved.cu)<0)CUI_K.push(saved.cu);
-}
-});
-localStorage.setItem('rd_data',JSON.stringify(R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};})));
+localStorage.setItem('rd_data',JSON.stringify(fullData()));
 setSyncStatus('Synced \u2713',true);
-if(callback)callback();
-})
-.catch(function(){setSyncStatus('Could not load shared notes',false);if(callback)callback();});
+if(cb)cb();
+}).catch(function(){setSyncStatus('Could not load shared notes',false);if(cb)cb();});
 }
 
 function setupShared(){
-if(shareId){
-var url=window.location.origin+window.location.pathname+'?share='+shareId;
-prompt('Share this URL with your team (already active):',url);
-return;
-}
-var d=R.map(function(r){return{id:r.id,nm:r.nm,ra:r.ra,no:r.no};});
-setSyncStatus('Creating shared storage...', false);
-fetch('https://jsonblob.com/api/jsonBlob',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify(d)
-}).then(function(res){
-var loc=res.headers.get('Location')||res.headers.get('location');
-if(loc){shareId=loc.split('/').pop();}
-else{return res.json().then(function(){shareId=res.url.split('/').pop();});}
-}).then(function(){
-if(!shareId){setSyncStatus('Error creating shared storage',false);return;}
-var url=window.location.origin+window.location.pathname+'?share='+shareId;
+if(shareId){prompt('Share this URL with your team:',window.location.origin+window.location.pathname+'?share='+shareId);return;}
+setSyncStatus('Creating shared storage...',false);
+fetch('https://api.npoint.io/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:fullData()})})
+.then(function(r){return r.json();})
+.then(function(data){
+if(data&&data.id){shareId=data.id;}
+if(!shareId){setSyncStatus('Error creating storage',false);return;}
 localStorage.setItem('rd_shareId',shareId);
 document.getElementById('sharebtn').style.display='none';
 setSyncStatus('Shared notes active',true);
 window.addEventListener('beforeunload',function(){cloudSave();});
-prompt('Copy this URL and use it as your SharePoint link.\nEveryone who opens it will share the same notes:',url);
+prompt('Copy this URL and use it as your SharePoint link.\nEveryone who opens it will share the same notes:',window.location.origin+window.location.pathname+'?share='+shareId);
 }).catch(function(e){setSyncStatus('Error: '+e.message,false);});
 }
 
 function initSync(){
 shareId=getShareId()||localStorage.getItem('rd_shareId');
 if(shareId){
-document.getElementById('sharebtn').classList.add('active');
-document.getElementById('sharebtn').innerHTML='&#9729; Shared \u2713';
-cloudLoad(function(){function toggleAddPanel(){var p=document.getElementById('addpanel');p.classList.toggle('open');if(!p.classList.contains('open')){document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';}}
-
-var pendingRestaurant=null;
-
-function searchRestaurant(){
-var name=document.getElementById('add-name').value.trim();
-if(!name){alert('Please enter a restaurant name');return;}
-var btn=document.getElementById('add-search-btn');
-var loading=document.getElementById('add-loading');
-var resultDiv=document.getElementById('add-result');
-btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
-
-fetch('https://api.anthropic.com/v1/messages',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-model:'claude-sonnet-4-20250514',
-max_tokens:1000,
-tools:[{type:'web_search_20250305',name:'web_search'}],
-messages:[{role:'user',content:'Find details about the restaurant "'+name+'" in London, UK. Search for it online then respond ONLY with a JSON object (no markdown, no backticks, no preamble) with these exact fields: {"name":"official name","cuisine":"cuisine type e.g. Italian, Japanese, etc","address":"full street address with postcode","lat":51.xxx,"lng":-0.xxx,"price":"££ or £££","phone":"phone number","website":"https://...","hours":"opening hours summary","description":"1-2 sentence description of the restaurant and what makes it special"}. Make sure lat and lng are accurate numeric coordinates for the exact address. Respond with ONLY the JSON object.'}]
-})
-}).then(function(res){return res.json();})
-.then(function(data){
-var text=data.content.map(function(c){return c.text||'';}).filter(Boolean).join('\n');
-var clean=text.replace(/```json/g,'').replace(/```/g,'').trim();
-var info=JSON.parse(clean);
-pendingRestaurant=info;
-resultDiv.innerHTML='<div class="add-result">'+
-'<div class="ar-name">'+info.name+'</div>'+
-'<div style="font-size:12px;color:#6e6e73">'+info.cuisine+' &middot; '+info.price+'</div>'+
-'<div style="margin-top:6px">'+info.description+'</div>'+
-'<div class="ar-grid">'+
-'<div><div class="ar-label">Address</div>'+info.address+'</div>'+
-'<div><div class="ar-label">Hours</div>'+info.hours+'</div>'+
-'<div><div class="ar-label">Phone</div>'+info.phone+'</div>'+
-'<div><div class="ar-label">Website</div><a href="'+info.website+'" target="_blank" style="color:#0071e3;font-size:12px">'+info.website.replace('https://www.','').replace('https://','')+'</a></div>'+
-'</div>'+
-'<div class="add-row" style="margin-top:12px;margin-bottom:0">'+
-'<div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div>'+
-'<div class="add-field"><label>Cuisine (edit if needed)</label><input type="text" id="add-cuisine" value="'+info.cuisine+'"></div>'+
-'</div>'+
-'<div class="add-confirm">'+
-'<button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button>'+
-'<button class="ac-cancel" onclick="cancelAdd()">Cancel</button>'+
-'</div>'+
-'</div>';
-}).catch(function(e){
-resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find restaurant details. Try being more specific (e.g. "Dishoom Shoreditch London").<br><br><small>'+e.message+'</small></div>';
-}).finally(function(){btn.disabled=false;loading.style.display='none';});
-}
-
-function confirmAdd(){
-if(!pendingRestaurant)return;
-var info=pendingRestaurant;
-var vi=document.getElementById('add-standard').value;
-var cu=document.getElementById('add-cuisine').value||info.cuisine;
-var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;
-var newR={
-id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,
-pr:info.price,vi:vi,ra:0,no:'',ph:info.phone,wb:info.website,
-hi:info.description,hr:info.hours,tt:'See map',tm:'Check Google Maps for directions from the office'
-};
-R.push(newR);
-if(CUI_K.indexOf(cu)<0){CUI_K.push(cu);}
-pendingRestaurant=null;
-document.getElementById('add-result').innerHTML='';
-document.getElementById('add-name').value='';
-document.getElementById('addpanel').classList.remove('open');
-saveData();
-render();
-map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});
-}
-
-function cancelAdd(){
-pendingRestaurant=null;
-document.getElementById('add-result').innerHTML='';
-}
-
-initSync();
-if(!shareId){render();}});
+document.getElementById('sharebtn').style.display='none';
+cloudLoad(function(){render();});
 window.addEventListener('beforeunload',function(){cloudSave();});
 }
 }
-initSync();
+
 loadSaved();
 
-var filters={c:[],p:[],v:[]};var selId=null;var markers=[];var mapFiltered=[];
+/* ── MAP ── */
+var filters={c:[],p:[],v:[]};var selId=null;var markers=[];
 var map=L.map('map').setView([51.515,-0.085],13);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
 
+/* Howden office pin */
 var howdenIcon=L.divIcon({className:'',
-html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg">'+
-'<defs><filter id="dsh"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs>'+
-'<rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#dsh)"/>'+
-'<circle cx="14" cy="14" r="12" fill="rgb(23,63,43)" filter="url(#dsh)"/>'+
-'<text x="14" y="19" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Arial,sans-serif">H</text>'+
-'</svg>',
+html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><filter id="dsh"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#dsh)"/><circle cx="14" cy="14" r="12" fill="rgb(23,63,43)" filter="url(#dsh)"/><text x="14" y="19" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Arial,sans-serif">H</text></svg>',
 iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});
-
 var howdenMarker=L.marker([51.51380,-0.07700],{icon:howdenIcon,zIndexOffset:-100,interactive:true}).addTo(map);
 howdenMarker.bindPopup('<div style="font-family:Arial,sans-serif"><div style="font-weight:700;font-size:14px;color:rgb(23,63,53)">Howden Group Holdings</div><div style="font-size:12px;color:#6e6e73;margin-top:2px">One Creechurch Place, EC3A 5AF</div></div>',{maxWidth:220});
 
+/* Tube stations */
 var tubeStations=[
-{nm:'Bank',lat:51.5133,lng:-0.0886},
-{nm:'Liverpool Street',lat:51.5178,lng:-0.0823},
-{nm:'Moorgate',lat:51.5186,lng:-0.0886},
-{nm:'Old Street',lat:51.5263,lng:-0.0877},
-{nm:'London Bridge',lat:51.5055,lng:-0.0860},
-{nm:'Borough',lat:51.5012,lng:-0.0935},
-{nm:'Aldgate',lat:51.5143,lng:-0.0755},
-{nm:'Aldgate East',lat:51.5152,lng:-0.0716},
-{nm:'Tower Hill',lat:51.5101,lng:-0.0765},
-{nm:'Monument',lat:51.5113,lng:-0.0860},
-{nm:'Cannon Street',lat:51.5113,lng:-0.0904},
-{nm:'Mansion House',lat:51.5122,lng:-0.0943},
-{nm:'St Paul\'s',lat:51.5152,lng:-0.0975},
-{nm:'Barbican',lat:51.5204,lng:-0.0979},
-{nm:'Shoreditch High St',lat:51.5234,lng:-0.0756},
-{nm:'Oxford Circus',lat:51.5152,lng:-0.1415},
-{nm:'Tottenham Court Rd',lat:51.5165,lng:-0.1310},
-{nm:'Goodge Street',lat:51.5205,lng:-0.1345}
+{nm:'Bank',lat:51.5133,lng:-0.0886},{nm:'Liverpool Street',lat:51.5178,lng:-0.0823},
+{nm:'Moorgate',lat:51.5186,lng:-0.0886},{nm:'Old Street',lat:51.5263,lng:-0.0877},
+{nm:'London Bridge',lat:51.5055,lng:-0.0860},{nm:'Borough',lat:51.5012,lng:-0.0935},
+{nm:'Aldgate',lat:51.5143,lng:-0.0755},{nm:'Aldgate East',lat:51.5152,lng:-0.0716},
+{nm:'Tower Hill',lat:51.5101,lng:-0.0765},{nm:'Monument',lat:51.5113,lng:-0.0860},
+{nm:'Cannon Street',lat:51.5113,lng:-0.0904},{nm:'Mansion House',lat:51.5122,lng:-0.0943},
+{nm:'St Paul\'s',lat:51.5152,lng:-0.0975},{nm:'Barbican',lat:51.5204,lng:-0.0979},
+{nm:'Shoreditch High St',lat:51.5234,lng:-0.0756},{nm:'Oxford Circus',lat:51.5152,lng:-0.1415},
+{nm:'Tottenham Court Rd',lat:51.5165,lng:-0.1310},{nm:'Goodge Street',lat:51.5205,lng:-0.1345}
 ];
-
-function createTubeIcon(name){
-return L.divIcon({className:'',
-html:'<div style="display:flex;align-items:center;gap:3px;pointer-events:auto;cursor:pointer">'+
-'<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">'+
-'<circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2.5"/>'+
-'<rect x="1" y="5.5" width="14" height="5" rx="0.5" fill="#003fa2"/>'+
-'</svg>'+
-'<span style="font-family:Arial,sans-serif;font-size:9px;font-weight:700;color:#333;background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:3px;white-space:nowrap;line-height:1.2">'+name+'</span></div>',
+function createTubeIcon(name){return L.divIcon({className:'',
+html:'<div style="display:flex;align-items:center;gap:3px;pointer-events:auto;cursor:pointer"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2.5"/><rect x="1" y="5.5" width="14" height="5" rx="0.5" fill="#003fa2"/></svg><span style="font-family:Arial,sans-serif;font-size:9px;font-weight:700;color:#333;background:rgba(255,255,255,0.85);padding:1px 4px;border-radius:3px;white-space:nowrap;line-height:1.2">'+name+'</span></div>',
 iconSize:[120,16],iconAnchor:[8,8]});}
-
 var tubeMarkers=[];
-tubeStations.forEach(function(s){
-var m=L.marker([s.lat,s.lng],{icon:createTubeIcon(s.nm),zIndexOffset:-200,interactive:false});
-tubeMarkers.push(m);
-});
-
-function updateTubeVisibility(){
-var z=map.getZoom();
-tubeMarkers.forEach(function(m){
-if(z>=14){if(!map.hasLayer(m))map.addLayer(m);}
-else{if(map.hasLayer(m))map.removeLayer(m);}
-});
-}
-updateTubeVisibility();
-map.on('zoomend',function(){updateTubeVisibility();});
-
+tubeStations.forEach(function(s){tubeMarkers.push(L.marker([s.lat,s.lng],{icon:createTubeIcon(s.nm),zIndexOffset:-200,interactive:false}));});
+function updateTubeVis(){var z=map.getZoom();tubeMarkers.forEach(function(m){if(z>=14){if(!map.hasLayer(m))map.addLayer(m);}else{if(map.hasLayer(m))map.removeLayer(m);}});}
+updateTubeVis();
+map.on('zoomend',function(){updateTubeVis();});
 map.on('moveend',function(){renderCards();});
 map.on('zoomend',function(){renderCards();});
 
-function createIcon(label){
-return L.divIcon({className:'',
-html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg">'+
-'<defs><radialGradient id="rg" cx="40%" cy="35%" r="50%"><stop offset="0%" stop-color="rgb(150,235,225)"/><stop offset="100%" stop-color="rgb(90,190,178)"/></radialGradient>'+
-'<filter id="ds"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs>'+
-'<rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#ds)"/>'+
-'<circle cx="14" cy="14" r="12" fill="url(#rg)" stroke="rgb(80,170,160)" stroke-width="0.5" filter="url(#ds)"/>'+
-'<ellipse cx="10" cy="10" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20,10,10)"/>'+
-'<text x="14" y="18.5" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial,sans-serif">'+label+'</text></svg>',
+/* ── ICONS & URLS ── */
+function createIcon(label){return L.divIcon({className:'',
+html:'<svg width="28" height="44" viewBox="0 0 28 44" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="rg" cx="40%" cy="35%" r="50%"><stop offset="0%" stop-color="rgb(150,235,225)"/><stop offset="100%" stop-color="rgb(90,190,178)"/></radialGradient><filter id="ds"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.4"/></filter></defs><rect x="12.5" y="20" width="3" height="20" rx="1.5" fill="#999" filter="url(#ds)"/><circle cx="14" cy="14" r="12" fill="url(#rg)" stroke="rgb(80,170,160)" stroke-width="0.5" filter="url(#ds)"/><ellipse cx="10" cy="10" rx="4" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-20,10,10)"/><text x="14" y="18.5" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial,sans-serif">'+label+'</text></svg>',
 iconSize:[28,44],iconAnchor:[14,42],popupAnchor:[0,-36]});}
 
 function gmapUrl(r){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.nm+', '+r.ad);}
 function gmapDir(r){return 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent('One Creechurch Place, London EC3A 5AF')+'&destination='+encodeURIComponent(r.nm+', '+r.ad)+'&travelmode=transit';}
+
+/* ── FILTERS ── */
 function getF(){return R.filter(function(r){if(filters.c.length&&filters.c.indexOf(r.cu)<0)return false;if(filters.p.length&&filters.p.indexOf(r.pr)<0)return false;if(filters.v.length&&filters.v.indexOf(r.vi)<0)return false;return true;});}
 function togF(t,v){var a=filters[t];var i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);render();}
 function clearAll(){filters={c:[],p:[],v:[]};render();}
+
+/* ── SELECTION ── */
 function sel(id){selId=(selId===id)?null:id;renderCards();if(selId){var r=R.filter(function(x){return x.id===id;})[0];if(r)map.flyTo([r.lat,r.lng],16,{animate:true,duration:0.6});setTimeout(function(){var el=document.getElementById('card-'+selId);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},150);}}
 function setRating(id,v){R.forEach(function(r){if(r.id===id)r.ra=v;});saveData();renderCards();}
 function setNotes(id){var el=document.getElementById('notes-'+id);if(el)R.forEach(function(r){if(r.id===id)r.no=el.value;});saveData();}
 function stH(ra,id,sz){var h='';for(var i=1;i<=5;i++)h+='<span style="font-size:'+sz+'px;color:'+(i<=ra?'#f5a623':'rgba(40,40,40,0.2)')+'" onclick="event.stopPropagation();setRating('+id+','+i+')">&#9733;</span>';return h;}
 
+/* ── VIEWPORT FILTER ── */
 function getVisible(fd){var b=map.getBounds();return fd.filter(function(r){return b.contains(L.latLng(r.lat,r.lng));});}
 
 function renderCards(){
@@ -411,9 +271,9 @@ if(!vis.length){lEl.innerHTML='<div class="empty">No restaurants in the current 
 lEl.innerHTML=vis.map(function(r){var idx=R.indexOf(r);var ac=selId===r.id;var vs=VS[r.vi];
 return '<div class="card" id="card-'+r.id+'"><div class="ch" onclick="sel('+r.id+')"><div class="cp">'+(idx+1)+'</div><div class="ci"><div class="cn">'+r.nm+' <span class="ct" style="background:'+vs.bg+';color:'+vs.t+'">'+r.vi+'</span> <span class="cprice">'+r.pr+'</span></div><div class="cs">'+r.cu+'</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="stars">'+stH(r.ra,r.id,16)+'</div><div style="font-size:10px;color:rgba(40,40,40,0.45);font-weight:600">'+r.tt+' from office</div></div></div><div class="cd'+(ac?' open':'')+'"><div class="cdi"><div class="dd"></div><div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0faf8;border-radius:10px;border:1px solid #e0f0ed;margin-bottom:14px"><svg width="18" height="18" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#fff" stroke="#e4002b" stroke-width="2"/><rect x="1.5" y="5.5" width="13" height="5" rx="0.5" fill="#003fa2"/></svg><div><div style="font-size:13px;font-weight:700;color:#333">'+r.tt+' from the office</div><div style="font-size:11px;color:#666;margin-top:1px">'+r.tm+'</div></div></div><div class="desc">'+r.hi+'</div><div class="dg"><div><div class="dl">Address</div><div class="dv">'+r.ad+'</div></div><div><div class="dl">Hours</div><div class="dv">'+r.hr+'</div></div><div><div class="dl">Phone</div><div class="dv">'+r.ph+'</div></div><div><div class="dl">Website</div><div class="dv"><a href="'+r.wb+'" target="_blank">'+r.wb.replace('https://www.','').replace('https://','')+'</a></div></div></div><div class="da"><a class="db pr" href="'+gmapDir(r)+'" target="_blank">Get Directions</a><a class="db sc" href="'+gmapUrl(r)+'" target="_blank">View on Map</a><a class="db sc" href="'+r.wb+'" target="_blank">Website</a></div><div class="dbot"><div class="dr"><div class="dl">Your Rating</div><div class="stars">'+stH(r.ra,r.id,24)+'</div></div><div class="dn"><div class="dl">Your Notes</div><textarea class="ni" id="notes-'+r.id+'" oninput="setNotes('+r.id+')" placeholder="Favourite dishes, who you went with...">'+(r.no||'')+'</textarea></div></div></div></div></div>';}).join('');}
 
+/* ── RENDER ── */
 function render(){
 var fd=getF();var hasF=filters.c.length||filters.p.length||filters.v.length;
-document.getElementById('count').textContent=fd.length+' of '+R.length+' restaurants';
 document.getElementById('cb').style.display=hasF?'inline-block':'none';
 
 document.getElementById('fc').innerHTML=CUI_K.map(function(c){var on=filters.c.indexOf(c)>=0;return '<button class="chip'+(on?' on':'')+'" onclick="togF(\'c\',\''+c.replace(/'/g,"\\'")+'\')">'+c+'</button>';}).join('');
@@ -427,10 +287,41 @@ m.bindPopup('<div class="pn">'+r.nm+'</div><div class="pc">'+r.cu+'</div><div cl
 m.on('click',function(){sel(r.id);});markers.push(m);});
 
 if(fd.length>0){var bounds=L.latLngBounds(fd.map(function(r){return[r.lat,r.lng];}));map.fitBounds(bounds,{padding:[50,50],maxZoom:15});}
+renderCards();
+}
 
-renderCards();}
+/* ── ADD RESTAURANT ── */
+function toggleAddPanel(){var p=document.getElementById('addpanel');p.classList.toggle('open');if(!p.classList.contains('open')){document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';}}
+var pendingRestaurant=null;
+function searchRestaurant(){
+var name=document.getElementById('add-name').value.trim();
+if(!name){alert('Please enter a restaurant name');return;}
+var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
+btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
+fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],
+messages:[{role:'user',content:'Find details about the restaurant "'+name+'" in London, UK. Search for it online then respond ONLY with a JSON object (no markdown, no backticks, no preamble) with these exact fields: {"name":"official name","cuisine":"cuisine type e.g. Italian, Japanese, etc","address":"full street address with postcode","lat":51.xxx,"lng":-0.xxx,"price":"££ or £££","phone":"phone number","website":"https://...","hours":"opening hours summary","description":"1-2 sentence description of the restaurant and what makes it special"}. Make sure lat and lng are accurate numeric coordinates for the exact address. Respond with ONLY the JSON object.'}]})
+}).then(function(res){return res.json();}).then(function(data){
+var text=data.content.map(function(c){return c.text||'';}).filter(Boolean).join('\n');
+var clean=text.replace(/```json/g,'').replace(/```/g,'').trim();
+var info=JSON.parse(clean);pendingRestaurant=info;
+resultDiv.innerHTML='<div class="add-result"><div class="ar-name">'+info.name+'</div><div style="font-size:12px;color:#6e6e73">'+info.cuisine+' &middot; '+info.price+'</div><div style="margin-top:6px">'+info.description+'</div><div class="ar-grid"><div><div class="ar-label">Address</div>'+info.address+'</div><div><div class="ar-label">Hours</div>'+info.hours+'</div><div><div class="ar-label">Phone</div>'+info.phone+'</div><div><div class="ar-label">Website</div><a href="'+info.website+'" target="_blank" style="color:#0071e3;font-size:12px">'+info.website.replace('https://www.','').replace('https://','')+'</a></div></div><div class="add-row" style="margin-top:12px;margin-bottom:0"><div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div><div class="add-field"><label>Cuisine (edit if needed)</label><input type="text" id="add-cuisine" value="'+info.cuisine+'"></div></div><div class="add-confirm"><button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button><button class="ac-cancel" onclick="cancelAdd()">Cancel</button></div></div>';
+}).catch(function(e){resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find restaurant details. Try being more specific (e.g. "Dishoom Shoreditch London").<br><br><small>'+e.message+'</small></div>';
+}).finally(function(){btn.disabled=false;loading.style.display='none';});}
 
-render();
+function confirmAdd(){
+if(!pendingRestaurant)return;var info=pendingRestaurant;
+var vi=document.getElementById('add-standard').value;var cu=document.getElementById('add-cuisine').value||info.cuisine;
+var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;
+R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:info.price,vi:vi,ra:0,no:'',ph:info.phone,wb:info.website,hi:info.description,hr:info.hours,tt:'See map',tm:'Check Google Maps for directions from the office'});
+if(CUI_K.indexOf(cu)<0)CUI_K.push(cu);
+pendingRestaurant=null;document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';document.getElementById('addpanel').classList.remove('open');
+saveData();render();map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});}
+function cancelAdd(){pendingRestaurant=null;document.getElementById('add-result').innerHTML='';}
+
+/* ── INIT ── */
+initSync();
+if(!shareId){render();}
 </script>
 </body>
 </html>
