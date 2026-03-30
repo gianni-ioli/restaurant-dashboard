@@ -293,27 +293,88 @@ renderCards();
 /* ── ADD RESTAURANT ── */
 function toggleAddPanel(){var p=document.getElementById('addpanel');p.classList.toggle('open');if(!p.classList.contains('open')){document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';}}
 var pendingRestaurant=null;
+
 function searchRestaurant(){
 var name=document.getElementById('add-name').value.trim();
 if(!name){alert('Please enter a restaurant name');return;}
 var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
 btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
-fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,tools:[{type:'web_search_20250305',name:'web_search'}],
-messages:[{role:'user',content:'Find details about the restaurant "'+name+'" in London, UK. Search for it online then respond ONLY with a JSON object (no markdown, no backticks, no preamble) with these exact fields: {"name":"official name","cuisine":"cuisine type e.g. Italian, Japanese, etc","address":"full street address with postcode","lat":51.xxx,"lng":-0.xxx,"price":"££ or £££","phone":"phone number","website":"https://...","hours":"opening hours summary","description":"1-2 sentence description of the restaurant and what makes it special"}. Make sure lat and lng are accurate numeric coordinates for the exact address. Respond with ONLY the JSON object.'}]})
-}).then(function(res){return res.json();}).then(function(data){
-var text=data.content.map(function(c){return c.text||'';}).filter(Boolean).join('\n');
-var clean=text.replace(/```json/g,'').replace(/```/g,'').trim();
-var info=JSON.parse(clean);pendingRestaurant=info;
-resultDiv.innerHTML='<div class="add-result"><div class="ar-name">'+info.name+'</div><div style="font-size:12px;color:#6e6e73">'+info.cuisine+' &middot; '+info.price+'</div><div style="margin-top:6px">'+info.description+'</div><div class="ar-grid"><div><div class="ar-label">Address</div>'+info.address+'</div><div><div class="ar-label">Hours</div>'+info.hours+'</div><div><div class="ar-label">Phone</div>'+info.phone+'</div><div><div class="ar-label">Website</div><a href="'+info.website+'" target="_blank" style="color:#0071e3;font-size:12px">'+info.website.replace('https://www.','').replace('https://','')+'</a></div></div><div class="add-row" style="margin-top:12px;margin-bottom:0"><div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div><div class="add-field"><label>Cuisine (edit if needed)</label><input type="text" id="add-cuisine" value="'+info.cuisine+'"></div></div><div class="add-confirm"><button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button><button class="ac-cancel" onclick="cancelAdd()">Cancel</button></div></div>';
-}).catch(function(e){resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find restaurant details. Try being more specific (e.g. "Dishoom Shoreditch London").<br><br><small>'+e.message+'</small></div>';
-}).finally(function(){btn.disabled=false;loading.style.display='none';});}
+
+/* Step 1: Geocode with Nominatim */
+fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(name+' London')+'&limit=1&addressdetails=1')
+.then(function(r){return r.json();})
+.then(function(geo){
+if(!geo||!geo.length)throw new Error('Location not found');
+var g=geo[0];
+var lat=parseFloat(g.lat);var lng=parseFloat(g.lon);
+var osmId=g.osm_id;var osmType=g.osm_type;
+
+/* Step 2: Get details from OSM via Overpass */
+var overType=osmType==='node'?'node':osmType==='way'?'way':'relation';
+return fetch('https://overpass-api.de/api/interpreter?data=[out:json];'+overType+'('+osmId+');out body;')
+.then(function(r){return r.json();})
+.then(function(osm){
+var tags=(osm.elements&&osm.elements[0]&&osm.elements[0].tags)||{};
+var addr=g.display_name.split(',').slice(0,3).join(',').trim();
+var postcode=g.address&&(g.address.postcode||'')||'';
+if(postcode&&addr.indexOf(postcode)<0)addr+=', '+postcode;
+
+var info={
+name:tags.name||name,
+cuisine:tags.cuisine||'',
+address:addr,
+lat:lat,lng:lng,
+price:'',
+phone:tags.phone||tags['contact:phone']||'',
+website:tags.website||tags['contact:website']||'',
+hours:tags.opening_hours||'',
+description:''
+};
+
+/* Clean up cuisine */
+if(info.cuisine){info.cuisine=info.cuisine.replace(/_/g,' ').replace(/;/g,', ');info.cuisine=info.cuisine.charAt(0).toUpperCase()+info.cuisine.slice(1);}
+
+pendingRestaurant=info;
+showAddForm(info);
+});
+}).catch(function(e){
+resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try a more specific name (e.g. "Dishoom Shoreditch London").<br><br><small>'+e.message+'</small></div>';
+}).finally(function(){btn.disabled=false;loading.style.display='none';});
+}
+
+function showAddForm(info){
+var resultDiv=document.getElementById('add-result');
+resultDiv.innerHTML='<div class="add-result">'+
+'<div class="ar-name">'+info.name+'</div>'+
+'<div style="font-size:12px;color:#6e6e73;margin-top:2px">'+info.address+'</div>'+
+'<div style="font-size:11px;color:#999;margin-top:4px">Coordinates: '+info.lat.toFixed(5)+', '+info.lng.toFixed(5)+'</div>'+
+'<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+'<div class="add-field"><label>Cuisine'+(info.cuisine?' (auto-detected)':'')+'</label><input type="text" id="add-cuisine" value="'+info.cuisine+'" placeholder="e.g. Italian, Japanese"></div>'+
+'<div class="add-field"><label>Price</label><select id="add-price"><option value="\u00a3\u00a3">\u00a3\u00a3</option><option value="\u00a3\u00a3\u00a3">\u00a3\u00a3\u00a3</option></select></div>'+
+'<div class="add-field"><label>Standard</label><select id="add-standard"><option value="Fancy">Fancy</option><option value="Intermediate" selected>Intermediate</option><option value="Low Key">Low Key</option></select></div>'+
+'<div class="add-field"><label>Phone'+(info.phone?' (found)':'')+'</label><input type="text" id="add-phone" value="'+info.phone+'" placeholder="+44 20 ..."></div>'+
+'<div class="add-field"><label>Website'+(info.website?' (found)':'')+'</label><input type="text" id="add-website" value="'+info.website+'" placeholder="https://..."></div>'+
+'<div class="add-field"><label>Hours'+(info.hours?' (found)':'')+'</label><input type="text" id="add-hours" value="'+info.hours+'" placeholder="e.g. Mon-Sat 12-10pm"></div>'+
+'</div>'+
+'<div class="add-field" style="margin-top:10px"><label>Short Description</label><input type="text" id="add-desc" value="'+info.description+'" placeholder="What makes this place special..."></div>'+
+'<div class="add-confirm">'+
+'<button class="ac-add" onclick="confirmAdd()">Add to Dashboard</button>'+
+'<button class="ac-cancel" onclick="cancelAdd()">Cancel</button>'+
+'</div>'+
+'</div>';
+}
 
 function confirmAdd(){
 if(!pendingRestaurant)return;var info=pendingRestaurant;
-var vi=document.getElementById('add-standard').value;var cu=document.getElementById('add-cuisine').value||info.cuisine;
+var cu=document.getElementById('add-cuisine').value||'Other';
+var pr=document.getElementById('add-price').value;
+var vi=document.getElementById('add-standard').value;
+var ph=document.getElementById('add-phone').value||'See website';
+var wb=document.getElementById('add-website').value||'';
+var hr=document.getElementById('add-hours').value||'See website';
+var desc=document.getElementById('add-desc').value||info.name+' in '+info.address;
 var newId=R.length?Math.max.apply(null,R.map(function(r){return r.id;}))+1:1;
-R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:info.price,vi:vi,ra:0,no:'',ph:info.phone,wb:info.website,hi:info.description,hr:info.hours,tt:'See map',tm:'Check Google Maps for directions from the office'});
+R.push({id:newId,nm:info.name,cu:cu,ad:info.address,lat:info.lat,lng:info.lng,pr:pr,vi:vi,ra:0,no:'',ph:ph,wb:wb,hi:desc,hr:hr,tt:'See map',tm:'Check Google Maps for directions from the office'});
 if(CUI_K.indexOf(cu)<0)CUI_K.push(cu);
 pendingRestaurant=null;document.getElementById('add-result').innerHTML='';document.getElementById('add-name').value='';document.getElementById('addpanel').classList.remove('open');
 saveData();render();map.flyTo([info.lat,info.lng],15,{animate:true,duration:0.6});}
