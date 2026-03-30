@@ -300,55 +300,72 @@ if(!name){alert('Please enter a restaurant name');return;}
 var btn=document.getElementById('add-search-btn');var loading=document.getElementById('add-loading');var resultDiv=document.getElementById('add-result');
 btn.disabled=true;loading.style.display='block';resultDiv.innerHTML='';
 
-/* Use Photon geocoder (OSM-based, good with POI names) */
-fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name+' London')+'&limit=5&lat=51.51&lon=-0.08&lang=en')
+fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(name+' London')+'&limit=10&lat=51.51&lon=-0.08&lang=en')
 .then(function(r){return r.json();})
 .then(function(data){
 if(!data.features||!data.features.length)throw new Error('Not found');
 
-/* Find best restaurant match */
-var best=null;
+/* Filter to likely restaurant/food matches and deduplicate by name+street */
+var seen={};
+var results=[];
 data.features.forEach(function(f){
-if(!best){best=f;return;}
-var cat=((f.properties.osm_value||'')+(f.properties.type||'')).toLowerCase();
-if(cat.indexOf('restaurant')>=0||cat.indexOf('cafe')>=0||cat.indexOf('bar')>=0)best=f;
-});
-
-var f=best;
 var p=f.properties||{};
+var key=(p.name||'')+':'+(p.street||'')+':'+(p.postcode||'');
+if(seen[key])return;
+seen[key]=true;
 var coords=f.geometry.coordinates;
-var lng=coords[0];var lat=coords[1];
-
-/* Build address */
 var parts=[];
 if(p.housenumber&&p.street)parts.push(p.housenumber+' '+p.street);
 else if(p.street)parts.push(p.street);
+if(p.district||p.locality)parts.push(p.district||p.locality);
 if(p.postcode)parts.push(p.postcode);
-if(!parts.length)parts.push(p.name||name);
-var addr=parts.join(', ');
+results.push({name:p.name||name,address:parts.join(', ')||p.city||'London',lat:coords[1],lng:coords[0],area:p.district||p.locality||p.city||''});
+});
 
-/* Now get detailed OSM tags via Nominatim reverse lookup */
-return fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+lat+'&lon='+lng+'&zoom=18&addressdetails=1')
+if(!results.length)throw new Error('Not found');
+
+if(results.length===1){
+/* Only one result — go straight to detail lookup */
+pickResult(results[0]);
+}else{
+/* Show list to choose from */
+resultDiv.innerHTML='<div class="add-result"><div style="font-weight:700;font-size:14px;margin-bottom:10px">Found '+results.length+' locations — pick one:</div>'+
+results.map(function(r,i){
+return '<div onclick="pickSearchResult('+i+')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;background:#f8f8f8;border-radius:10px;cursor:pointer;transition:all 0.15s;border:1.5px solid transparent" onmouseover="this.style.borderColor=\'rgb(124,224,211)\'" onmouseout="this.style.borderColor=\'transparent\'">'+
+'<div style="width:28px;height:28px;border-radius:50%;background:rgb(124,224,211);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0">'+(i+1)+'</div>'+
+'<div><div style="font-weight:700;font-size:13px;color:#1d1d1f">'+r.name+'</div>'+
+'<div style="font-size:11px;color:#6e6e73;margin-top:1px">'+r.address+'</div></div></div>';
+}).join('')+'</div>';
+window._searchResults=results;
+}
+})
+.catch(function(e){
+resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name.<br><br><small>'+e.message+'</small></div>';
+}).finally(function(){btn.disabled=false;loading.style.display='none';});
+}
+
+function pickSearchResult(idx){
+var r=window._searchResults[idx];
+if(r)pickResult(r);
+}
+
+function pickResult(result){
+var resultDiv=document.getElementById('add-result');
+resultDiv.innerHTML='<div class="add-result"><div style="color:#6e6e73;font-size:12px">Loading details...</div></div>';
+
+/* Get detailed OSM tags */
+fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+result.lat+'&lon='+result.lng+'&zoom=18&addressdetails=1')
 .then(function(r){return r.json();})
 .then(function(rev){
-/* Try to get OSM element details */
 var osmType=rev.osm_type;var osmId=rev.osm_id;
-if(!osmType||!osmId)return {name:p.name||name,lat:lat,lng:lng,address:addr,tags:{}};
-
-/* Get full tags from Nominatim lookup endpoint */
+if(!osmType||!osmId)return {tags:{}};
 return fetch('https://nominatim.openstreetmap.org/lookup?format=json&osm_ids='+osmType.charAt(0).toUpperCase()+osmId+'&extratags=1')
 .then(function(r){return r.json();})
-.then(function(details){
-var tags=(details&&details[0]&&details[0].extratags)||{};
-var a=rev.address||{};
-var betterAddr=[a.road,a.house_number?a.house_number:''].filter(Boolean).join(' ');
-if(a.postcode)betterAddr+=', '+a.postcode;
-return {name:p.name||name,lat:lat,lng:lng,address:betterAddr||addr,tags:tags};
-}).catch(function(){return {name:p.name||name,lat:lat,lng:lng,address:addr,tags:{}};});
-});
+.then(function(details){return {tags:(details&&details[0]&&details[0].extratags)||{}};})
+.catch(function(){return {tags:{}};});
 })
-.then(function(result){
-var tags=result.tags||{};
+.then(function(d){
+var tags=d.tags||{};
 var info={
 name:result.name,
 cuisine:tags.cuisine||'',
@@ -363,10 +380,11 @@ description:''
 if(info.cuisine){info.cuisine=info.cuisine.replace(/_/g,' ').replace(/;/g,', ');info.cuisine=info.cuisine.charAt(0).toUpperCase()+info.cuisine.slice(1);}
 pendingRestaurant=info;
 showAddForm(info);
-})
-.catch(function(e){
-resultDiv.innerHTML='<div class="add-result" style="color:#c00">Could not find "'+name+'". Try the exact restaurant name.<br><br><small>'+e.message+'</small></div>';
-}).finally(function(){btn.disabled=false;loading.style.display='none';});
+}).catch(function(){
+var info={name:result.name,cuisine:'',address:result.address,lat:result.lat,lng:result.lng,price:'',phone:'',website:'',hours:'',description:''};
+pendingRestaurant=info;
+showAddForm(info);
+});
 }
 
 function showAddForm(info){
