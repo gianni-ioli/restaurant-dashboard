@@ -161,8 +161,8 @@ function cloudSave(){
 if(!shareId)return;
 var d=R.map(function(r){return{id:r.id,nm:r.nm,cu:r.cu,ad:r.ad,lat:r.lat,lng:r.lng,pr:r.pr,vi:r.vi,ra:r.ra,no:r.no,ph:r.ph,wb:r.wb,hi:r.hi,hr:r.hr,tt:r.tt||'',tm:r.tm||''};});
 setSyncStatus('Saving...', false);
-fetch('https://jsonblob.com/api/jsonBlob/'+shareId,{
-method:'PUT',
+fetch('https://api.npoint.io/'+shareId,{
+method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify(d)
 }).then(function(){setSyncStatus('Synced \u2713',true);})
@@ -172,7 +172,7 @@ body:JSON.stringify(d)
 function cloudLoad(callback){
 if(!shareId)return;
 setSyncStatus('Loading shared notes...', false);
-fetch('https://jsonblob.com/api/jsonBlob/'+shareId)
+fetch('https://api.npoint.io/'+shareId)
 .then(function(res){return res.json();})
 .then(function(d){
 d.forEach(function(saved){
